@@ -1,33 +1,39 @@
-# Quy tắc vận hành Plugin `music_maker_plugin`
+# Operating Rules for `music_maker_plugin`
 
-Plugin này chuyên sáng tác **nhạc hòa tấu không lời (instrumental)** và **nhạc beat** bằng SoundFont (`.sf2`) và Python toolkit.
+This plugin specializes in composing, arranging, mixing, and rendering **instrumental music** and **beats** using SoundFont (`.sf2`) files and a Python toolkit, backed by a full suite of English music-producer expert skills.
 
-## 1. Kích hoạt Skill & Agent đồng bộ
+## 1. Activating the Skill & Syncing Experts
 
-- **Skill chính**: `soundfont-music`.
-- Khi người dùng yêu cầu kích hoạt plugin hoặc giao nhiệm vụ làm nhạc cho plugin này:
-  1. **LUÔN kích hoạt `soundfont-music` làm skill chính** điều phối toàn bộ quy trình.
-  2. **Đồng thời quét và kích hoạt toàn bộ các skill chuyên gia / skill khác** đang có trong `music_maker_plugin/skills/` (và nạp hướng dẫn của các agent chuyên môn trong `music_maker_plugin/agents/` nếu có file `.md` agent).
+- **Primary execution skill**: `soundfont-music`.
+- When the user requests activation of the plugin or assigns a music production task to it:
+  1. **ALWAYS activate `soundfont-music` as the primary orchestrating execution skill**.
+  2. **Simultaneously scan and activate the specialist producer skills** in `music_maker_plugin/skills/` (and load specialist agents in `music_maker_plugin/agents/` as needed):
+     - `producer-mindset-workflow` — Production brief, creative constraints, unblocking, dramatic arc, subtractive arranging, finishing discipline.
+     - `genre-style-encyclopedia` — Authentic BPM, rhythm/harmony pillars, global musical idioms, hybrid blending.
+     - `music-theory-harmony` — Scales, modes, functional/pop/jazz harmony, voice leading, counterpoint, motifs.
+     - `groove-rhythm-drums` — Drum kit roles, pocket, humanization, ghost notes, `3+3+2`, kick-bass composite locking.
+     - `orchestration-arrangement` — Register spacing, Rimsky-Korsakov blending & economy of colour, idiomatic pedal/strum/arpeggio writing, song form.
+     - `mixing-timbre-mastering` — Lavengood timbre oppositions, Moore's 5 layers, 3D Sound-Box balance, anti-mud, centered-pan `multi_track/` stem QA, NumPy audio verification.
 
-## 2. Học toàn bộ kho MIDI trước khi vào việc (`midi/`)
+## 2. Learn from the Entire MIDI Library Before Starting Work (`midi/`)
 
-- Trước khi lên bố cục hay sáng tác bài nhạc mới, **BẮT BUỘC** kiểm tra và chạy script phân tích MIDI (`python analyze_midi.py` trỏ tới thư mục `music_maker_plugin/midi/`) để học toàn bộ dữ liệu MIDI hiện có.
-- Kho `midi/` có thể chứa:
-  - Các file `.mid` / `.midi` đơn lẻ (1 track hoặc multi-track).
-  - Các **thư mục project MIDI** chứa nhiều file `.mid` tách riêng theo nhạc cụ (ví dụ: `drum.mid`, `bass.mid`, `piano.mid`, `lead.mid`...).
-- **Nhận diện nhạc cụ qua tên file**: Luôn đọc chính xác **tên file (`filename`)** và **tên thư mục project** do `analyze_midi.py` xuất ra, vì tác giả đặt tên file theo đúng tên nhạc cụ.
-- **Tư duy học từ MIDI**: Những file MIDI trong `midi/` là do chính tác giả (người dùng) tự đánh và tự phối. Hãy lấy đó làm tư liệu tham khảo cốt lõi để học **cách đánh, cách rải, cách fill chuyển đoạn, cách đánh trống (kick/snare/hat/ghost notes/fills), cách đi bass, cách xếp voicing, dynamics và tư duy phối khí** của tác giả. Nếu tác giả yêu cầu phối tiếp từ một bản phác thảo MIDI có sẵn, hãy nạp trực tiếp dữ liệu MIDI đó vào bài.
+- Before laying out or composing a new piece, it is **MANDATORY** to check and run the MIDI analysis script (`python analyze_midi.py` pointed at the `music_maker_plugin/midi/` directory) to learn from all existing MIDI data.
+- The `midi/` library may contain:
+  - Individual `.mid` / `.midi` files (single-track or multi-track).
+  - **MIDI project folders** containing multiple `.mid` files separated by instrument (e.g., `drum.mid`, `bass.mid`, `piano.mid`, `lead.mid`, etc.).
+- **Instrument identification via filenames**: Always read the exact **file names (`filename`)** and **project folder names** output by `analyze_midi.py`, because the author names files after the corresponding instruments.
+- **MIDI learning mindset**: The MIDI files in `midi/` were performed and arranged by the author (the user) personally. Treat them as the core reference material for learning the author's **playing style, voicing spread, section-transition fills, drumming technique (kick/snare/hat/ghost notes/fills), bass lines, voicing arrangements, dynamics, and arrangement thinking**. If the author requests continuing an arrangement from an existing MIDI sketch, load that MIDI data directly into the new piece.
 
-## 3. Kỹ thuật Pedal (Vang) & Rải nhạc cụ
+## 3. Pedal (Sustain) Technique & Instrument Spreading
 
-- Với các nhạc cụ cần độ vang tự nhiên như **piano, e-piano, harp, guitar, strings, bell/celesta...**, không để hợp âm khô cứng ở các đoạn cần cảm xúc hoặc không gian rộng:
-  - **Chủ động bật chế độ Pedal (`track.pedal(...)`)** cho các đoạn muốn giữ độ vang (vừa kéo dài âm thanh mượt khi render WAV, vừa ghi chuẩn MIDI CC 64 `Sustain Pedal`). Nhớ nhả/đạp lại pedal khi đổi hợp âm để tránh đục tiếng.
-  - **Chủ động rải nhạc cụ (`track.strum(...)` / `track.arpeggio(...)`)** hoặc tách nốt hợp âm lệch thời gian tự nhiên ở các đoạn piano đệm, harp, guitar.
+- For instruments that need natural sustain, such as **piano, e-piano, harp, guitar, strings, bell/celesta, etc.**, do not leave chords dry and stiff in sections that call for emotion or a wide sonic space:
+  - **Proactively enable Pedal mode (`track.pedal(...)`)** for sections where you want to preserve sustain (this both keeps the sound smooth and long-lasting when rendering WAV and records standard MIDI CC 64 `Sustain Pedal`). Remember to release/re-press the pedal on chord changes to avoid muddy sound.
+  - **Proactively spread instruments (`track.strum(...)` / `track.arpeggio(...)`)** or offset chord notes in time naturally in accompaniment piano, harp, and guitar sections.
 
-## 4. Quy tắc xuất Multi-Track Audio (`multi_track/`)
+## 4. Multi-Track Audio Export Rules (`multi_track/`)
 
-- Sau khi hoàn thiện bài nhạc, bên cạnh file MIDI và file WAV mix tổng, **BẮT BUỘC** tạo thư mục `multi_track/` (trong thư mục output của bài, ví dụ `out/<song>/multi_track/`) và xuất **toàn bộ các track thành từng file audio `.wav` riêng biệt** để người dùng có thể đưa vào DAW mix hoặc chỉnh sửa.
-- **Quy tắc xử lý hiệu ứng & Pan khi xuất multi-track**:
-  - **Giữ nguyên toàn bộ hiệu ứng của nhạc cụ** (reverb, vibrato, release, bend/glide, âm sắc, tỷ lệ âm lượng tương đối...).
-  - **KHÔNG giữ `pan` của track** khi xuất multi-track (mọi track stem được đưa về giữa / center `pan=0` để người dùng tự do pan lại trong DAW).
-  - Mọi file stem đều phải đồng bộ điểm bắt đầu tại `beat 0` (cùng mốc thời gian) để thả vào DAW là khớp nhịp ngay.
+- After finalizing a piece, in addition to the MIDI file and the full mix WAV, it is **MANDATORY** to create a `multi_track/` directory (inside the song's output directory, e.g., `out/<song>/multi_track/`) and export **all tracks as separate `.wav` audio files** so the user can bring them into a DAW for mixing or editing.
+- **Rules for effects & pan handling in multi-track export**:
+  - **Preserve all instrument effects** (reverb, vibrato, release, bend/glide, timbre, relative volume balance, etc.).
+  - **DO NOT preserve track `pan`** in the multi-track export (all track stems are centered / `pan=0`, letting the user freely pan them in the DAW).
+  - All stem files must have their starting point aligned at `beat 0` (same time reference), so they snap into the DAW grid right away when dropped in.

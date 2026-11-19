@@ -38,3 +38,35 @@ Biến `music_maker_plugin/` (hiện có skill `soundfont-music`) thành một A
 1. **`music_maker_plugin/plugin.json`**: Cập nhật `"name"` sang chuẩn kebab-case `"music-maker-plugin"` để vượt qua `agy plugin validate --strict` không còn cảnh báo.
 2. **`requirements.txt`**: Liệt kê đầy đủ các thư viện Python ngoài chuẩn mà `soundfont-music` sử dụng (`numpy>=1.24.0`, `scipy>=1.10.0`, `mido>=1.3.0`).
 3. **`install.bat`**: Script cài đặt toàn cục cho mọi dự án bằng Antigravity CLI (`agy plugin validate --strict`, `agy plugin install`, `agy plugin enable`), ưu tiên cài `requirements.txt` bằng `uv add` (tự khởi tạo `pyproject.toml` với `uv init --bare` nếu chưa có) rồi fallback sang `py`/`python` + `pip`, và cập nhật `README.md`.
+
+---
+
+## Phiên làm việc: 2026-11-19 — Trích xuất PDF & Xây dựng 6 Expert Skills + 4 Specialist Agents (Tiếng Anh)
+
+### Mục tiêu
+Biến toàn bộ kho tài liệu thu thập trong `tai lieu/` (cả Markdown lẫn 4 file PDF chuyên sâu) cùng kiến thức DSP/audio QA thành hệ thống **6 Expert Skills tiếng Anh** và **4 Specialist Agents** cho `music_maker_plugin`, tuân thủ nghiêm ngặt quy trình `llm-prompt-optimizer` (RSCIT, CoT, anti-hallucination, prompt compression) và bám sát 100% tài liệu gốc.
+
+### Những thay đổi đã thực hiện
+
+1. **Trích xuất & chưng cất tài liệu PDF → Markdown (bằng `uv run --with pymupdf --with pymupdf4llm`)**:
+   - `edm-timbre-ped-handout.pdf` (6 trang) → Lavengood 2020 timbre oppositions & Moore 2012 five functional layers.
+   - `MakingMusic_DennisDeSantis.pdf` (293 trang, 79 mục lục) → chưng cất đầy đủ 74 chiến lược sáng tạo qua 3 giai đoạn (*Problems of Beginning*, *Problems of Progressing*, *Problems of Finishing*).
+   - `principlesoforch00rims.pdf` (516 trang, Rimsky-Korsakov) → chưng cất Chương I–V (tỷ lệ cộng hưởng, pha trộn âm sắc, melody doubling, phân bố woodwind overlaying/crossing/enclosure, economy of colour).
+   - `OPEN-MUSIC-THEORY-1688414869.pdf` (1297 trang, v2) → trích xuất bổ sung các chương mới: *Popular Music Schemas*, *Fragile/Absent/Emergent Tonics*, *Texture*, *Orchestration & Piano Transcription*, *Hypermeter*, *Metrical Dissonance*, *Drumbeats*.
+   - Chưng cất bổ sung từ `learning-music-production-with-strudel/`, `PWYMCurriculum/`, `study-music/`, `music-theory-data/` (YAML 12-TET), và kiến thức DSP/artifact QA (`audio-dsp`, `audio-artifacts-debug`).
+
+2. **6 Expert Skills mới (Tiếng Anh) trong `music_maker_plugin/skills/`**:
+   - `music-theory-harmony/`: `SKILL.md` + 38 file tài liệu & dataset (`references/` + `assets/` gồm `omt-pop-and-neo-riemannian-schemas.md`, `de-santis-melody-and-harmony-strategies.md`, `Chords.yaml`, `Scales.yaml`, `Intervals.yaml`, `Notes.yaml`, v.v.).
+   - `groove-rhythm-drums/`: `SKILL.md` + 8 file references (`strudel-beat-foundations.md`, `de-santis-beat-and-groove-strategies.md`, `omt-pop-drumbeats-and-hypermeter.md`, `groove-and-feel.md`, `rhythmic-devices.md`, `odd-meters-polyrhythm.md`, `drums-percussion.md`, `bass.md`).
+   - `orchestration-arrangement/`: `SKILL.md` + 17 file references/assets (`rimsky-korsakov-orchestration.md`, `omt-orchestration-and-pop-layers.md`, `orchestration/*`, `instrument-idiom/*`, `form/*`, `assets/form-templates.md`).
+   - `producer-mindset-workflow/`: `SKILL.md` + 17 file references/assets (`making-music-beginning.md`, `making-music-progressing.md`, `making-music-finishing.md`, `pwym-producer-listening-and-structure.md`, `creative-workflows/*`, `reference-track-digging.md`, `style-reference-and-copyright.md`, `assets/*`).
+   - `mixing-timbre-mastering/`: `SKILL.md` + 6 file references (`edm-timbre-and-functional-layers.md`, `pwym-multitrack-and-mix-balancing.md`, `dsp-and-audio-verification.md`, `arrangement-for-mix.md`, `energy-and-dynamics.md`, `pre-production-decisions.md`).
+   - `genre-style-encyclopedia/`: `SKILL.md` + 29 file references/assets (`genres/*`, `study-music-musical-languages.md`, `research/*`, `assets/trend-and-reference-matrices.md`).
+
+3. **4 Specialist Agents & Đồng bộ Manifest/Rules**:
+   - Tạo `music_maker_plugin/agents/`: `executive-producer.md`, `composer-theorist.md`, `groove-arranger.md`, `soundfont-mix-engineer.md`.
+   - Thêm `music_maker_plugin/assets/logo.svg`, nâng cấp `music_maker_plugin/plugin.json` lên `1.1.0`, cập nhật `music_maker_plugin/rules/AGENTS.md`, `soundfont-music/SKILL.md` và `README.md`.
+
+4. **Kiểm thử sau cùng**:
+   - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 7 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`, 0 errors, 0 warnings).
+   - `unittest` (`test_toolkit.py`): **4/4 tests OK**.

@@ -46,12 +46,12 @@ and extended freely.
 
 ## Workflow
 1. **Learn MIDI library first (`midi/`)** - run `python analyze_midi.py` to inspect all `.mid` files and multi-track MIDI project folders in `music_maker_plugin/midi/`. Pay close attention to the exact **file names** (`drum.mid`, `bass.mid`, `piano.mid`, etc.) since the user names files after instruments. Study how the user plays, fills, voices chords, drums, and uses dynamics/pedal.
-2. **Brief** - instrumental music or beat (no lead vocals unless requested): scene, emotion, loop or one-shot, length, key, tempo. Use `references/game-music-design.md`.
-3. **Theory plan** - form (sections and bar counts), chord progression per section, mode, melody motif. Use `references/music-theory.md`.
-4. **Palette** - soundfonts from Step 1, presets chosen with `list_presets.py`.
+2. **Brief & Production Constraints** - activate `producer-mindset-workflow` and `genre-style-encyclopedia` for instrumental music or beat framing (scene, emotion, loop or one-shot, length, key, tempo, dramatic arc, avoidance list). Use `references/game-music-design.md` for interactive cues.
+3. **Theory & Groove Plan** - activate `music-theory-harmony` (form, chord progression/schema per section, mode, voice leading, melody motif) and `groove-rhythm-drums` (drum pocket, ghost notes, swing, fills, kick-bass composite). Also consult `references/music-theory.md`.
+4. **Orchestration & Palette** - activate `orchestration-arrangement` (5 functional layers, register spacing, doubling, idiomatic writing) and `mixing-timbre-mastering` (timbre oppositions, anti-mud slot separation), then verify soundfonts from Step 1 and pick real presets with `list_presets.py`.
 5. **Write** the song file from `songs/_template.py`: sections as chord lists, parts built per bar with helper functions, tracks placed with `at=` beat positions. For piano, e-piano, harp, guitar, or strings needing sustain/space, enable sustain pedal (`t.pedal(...)` / `t.pedal_steps(...)`) and use rolled/arpeggiated voicings (`t.strum(...)`, `t.arpeggio(...)`).
-6. **Render and verify** - you can't listen, so check with a short numpy script after every render: each track's first/last beat matches the form, nothing runs past the end, rms/peak are sane, notes/bends are what you intended. Tell the user you verified structure and levels, not how it sounds.
-7. **Deliver** mix WAV + MIDI + **`multi_track/` audio stems** (`song.export_stems(out_dir, keep_pan=False)` or via `python render.py <song>`), keeping track effects intact while centering pan (`pan=0`) so the user can mix and edit every track in a DAW; for games, loop files via `render_loop()`.
+6. **Render and verify** - you can't listen, so follow `mixing-timbre-mastering` NumPy QA after every render: check that each track's first/last beat matches the form, nothing runs past the end, rms/peak/crest/DC/L-R correlation are sane, and notes/bends match intent. Report only measured structure and levels, never claim how it sounds by ear.
+7. **Deliver** mix WAV + MIDI + **`multi_track/` audio stems** (`song.export_stems(out_dir, keep_pan=False)` or via `python render.py <song>`), keeping track effects intact while centering pan (`pan=0`) aligned from beat 0 so the user can mix and edit every track in a DAW; for games, loop files via `render_loop()`.
 
 ## Hard-won gotchas
 - Every bar needs the right number of tokens for its `step` (16 at 0.25 in 4/4). Build

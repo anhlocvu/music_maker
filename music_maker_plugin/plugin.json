@@ -1,24 +1,29 @@
 {
   "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "music-maker-plugin",
-  "displayName": "Music Maker (SoundFont Studio)",
-  "version": "1.0.0",
-  "description": "Plugin Antigravity chuyên sáng tác nhạc hòa tấu không lời và nhạc beat bằng SoundFont (.sf2), học phong cách từ kho MIDI của tác giả, hỗ trợ sustain pedal, rải nhạc cụ và xuất multi-track audio stems.",
+  "displayName": "Music Maker (SoundFont Producer Studio)",
+  "version": "1.1.0",
+  "logo": "assets/logo.svg",
+  "description": "Full-stack AI music producer plugin for composing, arranging, and rendering instrumental music and beats with SoundFonts (.sf2), grounded in music theory, drum/groove architecture, orchestration, mixing/timbre curation, author MIDI library learning, sustain pedal & instrument strumming, and grid-aligned multi-track WAV stems.",
   "category": "Music & Audio Production",
   "keywords": [
     "music",
+    "producer",
     "soundfont",
     "sf2",
     "midi",
     "instrumental",
     "beat",
+    "music-theory",
+    "orchestration",
+    "mixing",
     "multi-track",
     "stems",
     "pedal"
   ],
   "suggestedPrompts": [
-    "Kích hoạt plugin music_maker_plugin, học kho MIDI và sáng tác một bản beat không lời.",
-    "Soạn một bản hòa tấu piano và strings có đạp pedal vang, rải hợp âm và xuất multi_track stems."
+    "Activate music_maker_plugin, analyze my midi/ library, and compose an original instrumental beat with full multi_track stems.",
+    "Design a melancholic neo-soul or cinematic piano-and-strings arrangement with pedal sustain, strummed voicings, and verified WAV/MIDI output."
   ],
   "license": "MIT"
 }
