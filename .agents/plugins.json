@@ -1,0 +1,10 @@
+{
+  "entries": [
+    {
+      "path": ".",
+      "include_only": [
+        "music_maker_plugin"
+      ]
+    }
+  ]
+}
