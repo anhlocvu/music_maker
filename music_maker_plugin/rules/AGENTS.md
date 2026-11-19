@@ -37,3 +37,10 @@ This plugin specializes in composing, arranging, mixing, and rendering **instrum
   - **Preserve all instrument effects** (reverb, vibrato, release, bend/glide, timbre, relative volume balance, etc.).
   - **DO NOT preserve track `pan`** in the multi-track export (all track stems are centered / `pan=0`, letting the user freely pan them in the DAW).
   - All stem files must have their starting point aligned at `beat 0` (same time reference), so they snap into the DAW grid right away when dropped in.
+
+# Project directory structure rules
+
+It includes a main directory: /
+Inside the main directory is the project directory: /project
+Inside the project directory, individual projects will be placed there, each with a src folder, an output file, and a multi-track directory.
+If the project folder is not found in the home directory, create it automatically.
