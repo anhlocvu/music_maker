@@ -123,40 +123,65 @@ class ToolkitUpgradeTests(unittest.TestCase):
         tail_rms = float(np.sqrt(np.mean(arr_fx[sr : sr + sr // 2] ** 2)))
         self.assertGreater(tail_rms, 1e-4)
 
-    def test_analyze_midi_reports_filenames_and_project_folders(self):
+    def test_analyze_midi_reports_project_folders_and_full_readme(self):
         midi_root = os.path.join(self.tmp, "midi")
-        proj = os.path.join(midi_root, "my_chill_project")
-        # User names files after instruments even if program=0 / channel=0
+        ballad_proj = os.path.join(midi_root, "ballad beat")
         _write_test_midi(
-            os.path.join(proj, "drum.mid"),
+            os.path.join(ballad_proj, "drum.mid"),
             [(0.0, 0.25, 36, 110), (1.0, 0.25, 38, 105), (2.0, 0.25, 36, 110), (3.0, 0.25, 38, 108)],
             channel=9,
+            bpm=72,
         )
         _write_test_midi(
-            os.path.join(proj, "piano.mid"),
+            os.path.join(ballad_proj, "piano.mid"),
             [(0.0, 1.0, 60, 80), (0.04, 1.0, 64, 78), (0.08, 1.0, 67, 75)],
             pedals=[(0.0, 3.9)],
             channel=0,
+            bpm=72,
         )
+        readme_text = (
+            "# Ballad Beat\n"
+            "Style: Acoustic Pop Ballad\n"
+            "BPM: 72\n"
+            "Notes: Soft rolled piano chords with sustain pedal, minimal kick and snare pocket."
+        )
+        with open(os.path.join(ballad_proj, "readme.md"), "w", encoding="utf-8") as fh:
+            fh.write(readme_text + "\n")
+
+        lofi_proj = os.path.join(midi_root, "lofi_sketch")
         _write_test_midi(
-            os.path.join(midi_root, "bass_idea.mid"),
+            os.path.join(lofi_proj, "bass.mid"),
             [(0.0, 0.5, 36, 95), (1.5, 0.5, 39, 90)],
             channel=0,
+            bpm=85,
         )
 
         report = analyze_directory(midi_root)
+        self.assertEqual(len(report), 2)
         md = format_markdown(midi_root, report)
 
-        self.assertIn("my_chill_project", md)
+        self.assertIn("ballad beat", md)
         self.assertIn("drum.mid", md)
         self.assertIn("piano.mid", md)
-        self.assertIn("bass_idea.mid", md)
         self.assertIn("Pedal CC64: 1", md)
         self.assertIn("rolled=1", md)
+        self.assertIn("lofi_sketch", md)
+        self.assertIn("bass.mid", md)
+        self.assertIn(readme_text, md)
+        # Ensure README appears after the MIDI file analysis for ballad beat
+        self.assertGreater(md.index(readme_text), md.index("piano.mid"))
+        self.assertIn("No readme.md found in this project folder.", md)
+
+        # Pointing directly at a single project folder also returns its tracks and full readme
+        single_proj_report = analyze_directory(ballad_proj)
+        self.assertEqual(len(single_proj_report), 1)
+        self.assertEqual(single_proj_report[0]["project"], "ballad beat")
+        self.assertEqual(single_proj_report[0]["readme"], readme_text)
+        self.assertEqual(single_proj_report[0]["readme_file"], "readme.md")
 
         # Verify load_midi_into_track preserves notes + CC64 pedals
-        song = Song("Imported", bpm=120)
-        tr = load_midi_into_track(song, "piano", os.path.join(proj, "piano.mid"), "osc_sine")
+        song = Song("Imported", bpm=72)
+        tr = load_midi_into_track(song, "piano", os.path.join(ballad_proj, "piano.mid"), "osc_sine")
         self.assertEqual(len(tr.events), 3)
         self.assertEqual(len(tr.pedals), 1)
 

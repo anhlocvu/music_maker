@@ -10,7 +10,7 @@
 | `engine/midi_io.py` | `parse_midi_file`, `discover_midi_sources`, `load_midi_into_track` (notes + CC64 pedals) |
 | `engine/rpp.py` | `load_rpp(path)` reads a Reaper project into a Song |
 | `render.py` | `python render.py [song ...]`; exports mix WAV, MIDI, and `out/<song>/multi_track/*.wav` stems |
-| `analyze_midi.py` | `python analyze_midi.py [dir]` learns all single `.mid` & multi-track MIDI project folders with file names |
+| `analyze_midi.py` | `python analyze_midi.py [dir]` scans all MIDI project folders in `midi/` and outputs per-track MIDI analysis plus each project's full `readme.md` text |
 | `list_presets.py` | `python list_presets.py <font key> [search]` prints ready-to-paste tuples |
 
 ## Song and Track

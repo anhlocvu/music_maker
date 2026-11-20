@@ -15,14 +15,14 @@ This plugin specializes in composing, arranging, mixing, and rendering **instrum
      - `orchestration-arrangement` — Register spacing, Rimsky-Korsakov blending & economy of colour, idiomatic pedal/strum/arpeggio writing, song form.
      - `mixing-timbre-mastering` — Lavengood timbre oppositions, Moore's 5 layers, 3D Sound-Box balance, anti-mud, centered-pan `multi_track/` stem QA, NumPy audio verification.
 
-## 2. Learn from the Entire MIDI Library Before Starting Work (`midi/`)
+## 2. Learn from All MIDI Projects Before Starting Work (`midi/`)
 
-- Before laying out or composing a new piece, it is **MANDATORY** to check and run the MIDI analysis script (`python analyze_midi.py` pointed at the `music_maker_plugin/midi/` directory) to learn from all existing MIDI data.
-- The `midi/` library may contain:
-  - Individual `.mid` / `.midi` files (single-track or multi-track).
-  - **MIDI project folders** containing multiple `.mid` files separated by instrument (e.g., `drum.mid`, `bass.mid`, `piano.mid`, `lead.mid`, etc.).
-- **Instrument identification via filenames**: Always read the exact **file names (`filename`)** and **project folder names** output by `analyze_midi.py`, because the author names files after the corresponding instruments.
-- **MIDI learning mindset**: The MIDI files in `midi/` were performed and arranged by the author (the user) personally. Treat them as the core reference material for learning the author's **playing style, voicing spread, section-transition fills, drumming technique (kick/snare/hat/ghost notes/fills), bass lines, voicing arrangements, dynamics, and arrangement thinking**. If the author requests continuing an arrangement from an existing MIDI sketch, load that MIDI data directly into the new piece.
+- Before laying out or composing a new piece, it is **MANDATORY** to run the MIDI analysis script (`python analyze_midi.py` pointed at `music_maker_plugin/midi/`) so it scans **every MIDI project folder** in `midi/` (e.g., `midi/ballad beat/`) and outputs the full text of each project's `readme.md`.
+- Each project folder inside `midi/` contains:
+  - Multi-track `.mid` / `.midi` files separated by instrument (e.g., `drum.mid`, `bass.mid`, `piano.mid`, `lead.mid`, etc.).
+  - A `readme.md` file (written in English by the author) summarizing the project's style, genre, BPM, mood, and arrangement notes.
+- **Instrument & context identification**: Always read BOTH the exact **file names (`filename`) / project folder names** AND the **full `readme.md` text** output by `analyze_midi.py`, because the author names files after instruments and documents style/tempo intent in `readme.md`.
+- **MIDI learning mindset**: The MIDI projects in `midi/` were performed and arranged by the author personally. Treat each project's MIDI tracks together with its `readme.md` as core reference material for learning the author's **playing style, voicing spread, section-transition fills, drumming technique (kick/snare/hat/ghost notes/fills), bass lines, voicing arrangements, dynamics, and arrangement thinking**. If the author requests continuing an arrangement from an existing MIDI project, load its MIDI tracks directly into the new piece.
 
 ## 3. Pedal (Sustain) Technique & Instrument Spreading
 

@@ -70,3 +70,32 @@ Biến toàn bộ kho tài liệu thu thập trong `tai lieu/` (cả Markdown l�
 4. **Kiểm thử sau cùng**:
    - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 7 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`, 0 errors, 0 warnings).
    - `unittest` (`test_toolkit.py`): **4/4 tests OK**.
+
+
+---
+
+## Phiên làm việc: 2026-11-20 — Cập nhật `analyze_midi.py` cho MIDI Project Folders & `readme.md`
+
+### Mục tiêu
+Chuyển kho `music_maker_plugin/midi/` sang mô hình **project MIDI** (mỗi project là một thư mục con như `ballad beat/` gồm các track `.mid` và file `readme.md` tiếng Anh mô tả phong cách/BPM/ý đồ phối khí), xóa `music_maker_plugin/midi/README.md`, và cập nhật script phân tích MIDI để quét toàn bộ các project kèm xuất nguyên văn nội dung `readme.md` của từng project đó.
+
+### Những thay đổi đã thực hiện
+
+1. **Dọn thư mục `music_maker_plugin/midi/`**:
+   - Xóa `music_maker_plugin/midi/README.md` và thêm `.gitkeep` để giữ thư mục `midi/` trong repository.
+
+2. **Nâng cấp `engine/midi_io.py` & `analyze_midi.py`**:
+   - `music_maker_plugin/skills/soundfont-music/scripts/toolkit/engine/midi_io.py`:
+     - Thêm `_find_project_readme()` (tìm `readme.md` không phân biệt hoa/thường trong từng thư mục project) và `read_project_readme()` (đọc toàn bộ văn bản UTF-8/UTF-8-SIG).
+     - Cập nhật `discover_midi_sources()` để quét toàn bộ các project folder trong `midi/`, hỗ trợ cả trường hợp trỏ thẳng vào một thư mục project cụ thể.
+   - `music_maker_plugin/skills/soundfont-music/scripts/toolkit/analyze_midi.py`:
+     - `analyze_directory()` trả về thêm `readme_file`, `readme_path`, và toàn bộ nội dung `readme` cho từng project (có sẵn cả khi chạy `--json`).
+     - `format_markdown()` hiển thị mục `### Project README (...)` ngay sau phần phân tích các file `.mid` của từng project và in toàn bộ văn bản `readme.md` bên trong code fence an toàn (`_markdown_fence()`).
+
+3. **Đồng bộ Rules, Skills, Agent & README**:
+   - Cập nhật `music_maker_plugin/rules/AGENTS.md`, `music_maker_plugin/skills/soundfont-music/SKILL.md`, `music_maker_plugin/skills/soundfont-music/references/toolkit.md`, `music_maker_plugin/agents/executive-producer.md`, và `README.md` để AI luôn chạy `analyze_midi.py` trước khi sáng tác/phối khí và đọc cả phần `readme.md` tiếng Anh của từng project MIDI.
+
+4. **Kiểm thử sau cùng**:
+   - Cập nhật `test_analyze_midi_reports_project_folders_and_full_readme` trong `music_maker_plugin/skills/soundfont-music/scripts/toolkit/tests/test_toolkit.py` và chạy `unittest`: **4/4 tests OK**.
+   - Chạy `python music_maker_plugin/skills/soundfont-music/scripts/toolkit/analyze_midi.py` trên `music_maker_plugin/midi/`: hoạt động bình thường.
+   - Chạy `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 7 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).

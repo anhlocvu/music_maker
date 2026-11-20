@@ -245,47 +245,107 @@ def summarize_track(track_data, beats_per_bar=4.0, file_name=""):
     return summary
 
 
+def _find_project_readme(project_dir):
+    """Find a readme.md file (case-insensitive) inside a MIDI project folder."""
+    if not os.path.isdir(project_dir):
+        return None
+    for entry in sorted(os.listdir(project_dir)):
+        full = os.path.join(project_dir, entry)
+        if os.path.isfile(full) and entry.lower() == "readme.md":
+            return os.path.abspath(full)
+    for walk_root, dirs, files in os.walk(project_dir):
+        dirs.sort()
+        for fname in sorted(files):
+            if fname.lower() == "readme.md":
+                return os.path.abspath(os.path.join(walk_root, fname))
+    return None
+
+
+def read_project_readme(readme_path):
+    """Read the full text content of a project's readme.md safely."""
+    if not readme_path or not os.path.isfile(readme_path):
+        return None
+    for enc in ("utf-8-sig", "utf-8"):
+        try:
+            with open(readme_path, "r", encoding=enc) as fh:
+                return fh.read().strip()
+        except UnicodeDecodeError:
+            continue
+    with open(readme_path, "r", encoding="utf-8", errors="replace") as fh:
+        return fh.read().strip()
+
+
+def _collect_midi_files(folder):
+    """Collect all .mid/.midi files under folder sorted deterministically."""
+    midi_files = []
+    for walk_root, dirs, files in os.walk(folder):
+        dirs.sort()
+        for fname in sorted(files):
+            if fname.lower().endswith((".mid", ".midi")):
+                midi_files.append(os.path.abspath(os.path.join(walk_root, fname)))
+    return midi_files
+
+
 def discover_midi_sources(root_dir):
-    """Discover single .mid files and multi-track MIDI project folders under root_dir.
+    """Discover MIDI project folders (and fallback single MIDI files) under root_dir.
 
     Returns a list of groups:
-      [{"project": "<name>", "is_folder": bool, "files": [abs_path, ...]}]
+      [{"project": "<name>", "is_folder": bool, "files": [abs_path, ...], "readme_path": str|None}]
     """
     if not os.path.exists(root_dir):
         return []
     if os.path.isfile(root_dir):
-        return [{"project": os.path.basename(root_dir), "is_folder": False, "files": [os.path.abspath(root_dir)]}]
+        return [{
+            "project": os.path.basename(root_dir),
+            "is_folder": False,
+            "files": [os.path.abspath(root_dir)],
+            "readme_path": None,
+        }]
 
-    groups = []
-    entries = sorted(os.listdir(root_dir))
+    abs_root = os.path.abspath(root_dir)
+    entries = sorted(os.listdir(abs_root))
 
-    # Top-level single MIDI files
+    # Subfolders representing MIDI projects (e.g. midi/ballad beat/)
+    project_groups = []
     for entry in entries:
-        full = os.path.join(root_dir, entry)
-        if os.path.isfile(full) and entry.lower().endswith((".mid", ".midi")):
-            groups.append({
-                "project": entry,
-                "is_folder": False,
-                "files": [os.path.abspath(full)],
-            })
-
-    # Subfolders representing MIDI projects (can be nested; collect all .mid/.midi inside each project folder)
-    for entry in entries:
-        full = os.path.join(root_dir, entry)
+        full = os.path.join(abs_root, entry)
         if not os.path.isdir(full):
             continue
-        midi_files = []
-        for walk_root, _, files in os.walk(full):
-            for fname in sorted(files):
-                if fname.lower().endswith((".mid", ".midi")):
-                    midi_files.append(os.path.abspath(os.path.join(walk_root, fname)))
+        midi_files = _collect_midi_files(full)
         if midi_files:
-            groups.append({
+            project_groups.append({
                 "project": entry,
                 "is_folder": True,
                 "files": midi_files,
+                "readme_path": _find_project_readme(full),
             })
 
+    # Top-level MIDI files directly inside root_dir
+    top_midis = [
+        os.path.abspath(os.path.join(abs_root, entry))
+        for entry in entries
+        if os.path.isfile(os.path.join(abs_root, entry)) and entry.lower().endswith((".mid", ".midi"))
+    ]
+
+    # If user pointed directly at a single project folder (no project subfolders)
+    if not project_groups and top_midis:
+        root_readme = _find_project_readme(abs_root)
+        if root_readme is not None or len(top_midis) > 1 or os.path.basename(abs_root).lower() != "midi":
+            return [{
+                "project": os.path.basename(abs_root),
+                "is_folder": True,
+                "files": top_midis,
+                "readme_path": root_readme,
+            }]
+
+    groups = list(project_groups)
+    for fpath in top_midis:
+        groups.append({
+            "project": os.path.basename(fpath),
+            "is_folder": False,
+            "files": [fpath],
+            "readme_path": None,
+        })
     return groups
 
 

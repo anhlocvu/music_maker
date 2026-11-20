@@ -1,18 +1,30 @@
-"""Analyze all MIDI files and multi-track MIDI project folders in the plugin's midi/ directory.
+"""Analyze all MIDI project folders (and any MIDI files) in the plugin's midi/ directory.
 
 Usage:
     python analyze_midi.py                  # scans plugin's midi/ folder automatically
-    python analyze_midi.py path/to/midi     # scans a custom file or folder
+    python analyze_midi.py path/to/midi     # scans a custom MIDI library or project folder
     python analyze_midi.py --json           # outputs JSON instead of Markdown
 """
 import json
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
-from engine.midi_io import discover_midi_sources, parse_midi_file, summarize_track
+from engine.midi_io import (
+    discover_midi_sources,
+    parse_midi_file,
+    read_project_readme,
+    summarize_track,
+)
+
+
+def _markdown_fence(text):
+    """Return a backtick fence longer than any backtick run in text."""
+    longest = max((len(m.group(0)) for m in re.finditer(r"`+", text)), default=2)
+    return "`" * max(3, longest + 1)
 
 
 def default_midi_dir():
@@ -28,7 +40,7 @@ def default_midi_dir():
 
 
 def analyze_directory(target_path):
-    """Analyze every discovered MIDI file and project folder under target_path."""
+    """Analyze every discovered MIDI project folder (and any fallback MIDI files) under target_path."""
     groups = discover_midi_sources(target_path)
     results = []
     for group in groups:
@@ -49,23 +61,37 @@ def analyze_directory(target_path):
                 "total_bars": parsed["total_bars"],
                 "tracks": track_summaries,
             })
+
+        readme_abs = group.get("readme_path")
+        readme_rel = None
+        if readme_abs:
+            readme_rel = (
+                os.path.relpath(readme_abs, target_path).replace("\\", "/")
+                if os.path.isdir(target_path)
+                else os.path.basename(readme_abs)
+            )
+        readme_text = read_project_readme(readme_abs)
+
         results.append({
             "project": group["project"],
             "is_folder": group["is_folder"],
+            "readme_file": os.path.basename(readme_abs) if readme_abs else None,
+            "readme_path": readme_rel,
+            "readme": readme_text,
             "files": file_reports,
         })
     return results
 
 
 def format_markdown(target_path, report):
-    """Format analysis report as concise Markdown highlighting project and file names."""
+    """Format analysis report as Markdown including full per-project readme.md text."""
     lines = [f"# MIDI Reference Library Analysis (`{target_path}`)", ""]
     if not report:
-        lines.append("_Chưa có file `.mid` / `.midi` nào trong thư mục này._")
+        lines.append("_Chưa có project MIDI hoặc file `.mid` / `.midi` nào trong thư mục này._")
         return "\n".join(lines)
 
     for group in report:
-        kind = "Multi-track Project Folder" if group["is_folder"] else "Single MIDI File"
+        kind = "MIDI Project" if group["is_folder"] else "MIDI File"
         lines.append(f"## [{kind}] `{group['project']}`")
         lines.append("")
         for f in group["files"]:
@@ -102,6 +128,21 @@ def format_markdown(target_path, report):
                     )
                     if tr.get("opening_notes"):
                         lines.append(f"  - Opening: {' '.join(tr['opening_notes'])}")
+            lines.append("")
+
+        if group["is_folder"]:
+            readme_label = group.get("readme_path") or "readme.md"
+            readme_body = group.get("readme")
+            lines.append(f"### Project README (`{readme_label}`)")
+            if readme_body is None:
+                lines.append("_No readme.md found in this project folder._")
+            elif not readme_body:
+                lines.append("_(Empty readme.md)_")
+            else:
+                fence = _markdown_fence(readme_body)
+                lines.append(f"{fence}markdown")
+                lines.append(readme_body)
+                lines.append(fence)
             lines.append("")
     return "\n".join(lines)
 
