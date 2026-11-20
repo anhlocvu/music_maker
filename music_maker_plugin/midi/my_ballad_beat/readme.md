@@ -1,0 +1,1 @@
+This is a pop ballad project with a deeply melancholic mood; the chords lean toward a US-UK style. Everything is very gentle until the key change—right before the modulation, I added two bars for a fast drum fill, and then the key changes. The climax defines the pain. This song is in a major key, with a tempo of 70.
