@@ -6,18 +6,19 @@ Plugin Antigravity chuyên sáng tác **nhạc hòa tấu không lời (instrume
 
 ```text
 music_maker_plugin/
-├── plugin.json                        # Manifest Antigravity plugin (v1.1.0)
+├── plugin.json                        # Manifest Antigravity plugin (v1.2.0)
+├── THIRD_PARTY.md                     # Ghi nhận giấy phép & bản quyền bên thứ ba
 ├── assets/logo.svg                    # Logo plugin
 ├── rules/
 │   └── AGENTS.md                      # Quy tắc kích hoạt, học MIDI, pedal, xuất multi_track
 ├── skills/
-│   ├── soundfont-music/               # Skill chính (Python SoundFont engine, render, stems, analyze_midi)
-│   ├── producer-mindset-workflow/     # Executive producer mindset, 74 chiến lược Making Music, PWYM listening
-│   ├── genre-style-encyclopedia/      # Blueprint 23+ thể loại toàn cầu & ngôn ngữ âm nhạc
-│   ├── music-theory-harmony/          # Hòa âm, thang âm, Pop/Jazz schemas, voice leading, motif, 12-TET YAML
-│   ├── groove-rhythm-drums/           # Trống, pocket, humanize, ghost notes, 3+3+2, khóa Kick-Bass
-│   ├── orchestration-arrangement/     # Dàn nhạc (Rimsky-Korsakov), 5 layers, register, pedal/strum, form
-│   └── mixing-timbre-mastering/       # Timbre oppositions, Sound-Box 3D, mix balance, DSP & NumPy WAV QA
+│   ├── soundfont-music/               # Skill chính (SoundFont engine, voicing, expression, patterns, review, analysis, render, stems)
+│   ├── producer-mindset-workflow/     # Executive producer, Making Music, PWYM, Song Planner protocol, 12-word seed, moods
+│   ├── genre-style-encyclopedia/      # Blueprint 23+ thể loại, 7-Axis Style Maps & 10 craft playbooks
+│   ├── music-theory-harmony/          # Hòa âm, thang âm, Pop/Jazz schemas, climax/melody, 12-TET YAML
+│   ├── groove-rhythm-drums/           # Trống, pocket, 729 mẫu trống 16-step, Groove MIDI stats, khóa Kick-Bass
+│   ├── orchestration-arrangement/     # Dàn nhạc (Rimsky-Korsakov), 5 layers, low-interval hygiene, piano/organ idioms
+│   └── mixing-timbre-mastering/       # Timbre oppositions, Sound-Box 3D, spectral slope baselines & NumPy WAV QA
 ├── agents/                            # 4 specialist agents: executive-producer, composer-theorist, groove-arranger, soundfont-mix-engineer
 └── midi/                              # Kho MIDI tham khảo & project multi-track MIDI của tác giả
 ```

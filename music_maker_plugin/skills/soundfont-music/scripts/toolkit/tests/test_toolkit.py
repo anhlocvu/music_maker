@@ -185,6 +185,127 @@ class ToolkitUpgradeTests(unittest.TestCase):
         self.assertEqual(len(tr.events), 3)
         self.assertEqual(len(tr.pedals), 1)
 
+    def test_voicing_voice_lead_minimizes_motion_and_avoids_low_mud(self):
+        from engine.voicing import apply_voicings, voice_lead
+
+        chords = ["Cmaj7", "Am7", "Dm9", "G7"]
+        voicings = voice_lead(chords, voices=4, low=48, high=76, against=[[36], [45], [38], [43]])
+        self.assertEqual(len(voicings), 4)
+        for v in voicings:
+            self.assertEqual(len(v), 4)
+            self.assertTrue(all(48 <= p <= 76 for p in v))
+            self.assertEqual(v, sorted(v))
+            # No minor second or minor ninth inside voicing
+            for i in range(len(v)):
+                for j in range(i + 1, len(v)):
+                    self.assertNotIn(abs(v[j] - v[i]), (1, 13))
+
+        song = Song("Voiced", bpm=100)
+        tr = song.track("epiano", "osc_sine")
+        apply_voicings(tr, voicings, beats=4.0, vel=82, strum=0.02)
+        self.assertEqual(len(tr.events), 16)
+        self.assertAlmostEqual(tr.length(), 16.0, places=2)
+
+    def test_expression_humanize_is_deterministic_and_preserves_bounds(self):
+        from engine.expression import humanize_song, humanize_track
+
+        def _make_song():
+            s = Song("Human", bpm=110)
+            drums = s.track("drums", "osc_sine")
+            drums.seq("kick . snare . kick . snare .", step=0.5, repeat=4)
+            lead = s.track("lead", "osc_sine")
+            lead.seq("C5 D5 E5 G5 A5 G5 E5 D5", step=0.5, repeat=2)
+            return s
+
+        s1 = _make_song()
+        s2 = _make_song()
+        r1 = humanize_song(s1, roles={"drums": "drums", "lead": "melody"}, seed=42)
+        r2 = humanize_song(s2, roles={"drums": "drums", "lead": "melody"}, seed=42)
+        self.assertEqual(s1.tracks[1].events, s2.tracks[1].events)
+        self.assertIn("lead", r1)
+        self.assertGreater(r1["lead"]["timing_sd_ms"], 0.0)
+        for start, dur, key, vel, _ in s1.tracks[1].events:
+            self.assertGreaterEqual(start, 0.0)
+            self.assertGreater(dur, 0.0)
+            self.assertTrue(1 <= vel <= 127)
+
+        # Standalone single-track humanize also works
+        s3 = _make_song()
+        humanize_track(s3.tracks[1], role="melody", seed=99, bpm=110)
+        self.assertNotEqual(s3.tracks[1].events, _make_song().tracks[1].events)
+
+    def test_patterns_lookup_and_conversion_to_steps(self):
+        from engine.patterns import drum_stats_suggest, list_patterns, pattern_to_steps
+
+        all_pats = list_patterns(source="all")
+        self.assertGreaterEqual(len(all_pats), 700)
+
+        afro = list_patterns(query="AfroCub")
+        self.assertTrue(any("AfroCub" in p["name"] for p in afro))
+
+        steps = pattern_to_steps(afro[0])
+        self.assertIsInstance(steps, dict)
+        self.assertTrue(len(steps) > 0)
+        combined = pattern_to_steps(afro[0], combine=True)
+        self.assertEqual(len(combined.replace("|", "").split()), 16)
+
+        # Renderable on a Song track
+        song = Song("DrumPat", bpm=115)
+        tr = song.track("drums", "osc_sine")
+        tr.seq(combined, step=0.25)
+        self.assertGreater(len(tr.events), 0)
+        self.assertAlmostEqual(tr._cursor, 4.0, places=2)
+
+        # Empirical Groove MIDI Dataset suggestion
+        stat_seq = drum_stats_suggest("funk", bars=2, seed=7)
+        self.assertEqual(len(stat_seq.replace("|", "").split()), 32)
+
+    def test_review_detects_low_interval_mud_and_vertical_rubs(self):
+        from engine.review import format_review, review_song
+
+        song = Song("Muddy", bpm=120)
+        # Low interval mud: C2 + E2 (major third at MIDI 36, 40 -> below limit 46)
+        # Plus vertical rub: C4 vs Db4 sustained together
+        bass = song.track("bass", "osc_sine")
+        bass.seq("C2 - - -", step=0.5)
+        pad1 = song.track("pad1", "osc_sine")
+        pad1.seq("E2+C4 - - -", step=0.5)
+        pad2 = song.track("pad2", "osc_sine")
+        pad2.seq("Db4 - - -", step=0.5)
+
+        rep = review_song(song, harmony=[(0.0, "Cmaj7")])
+        self.assertGreater(len(rep["low_intervals"]), 0)
+        self.assertGreater(len(rep["vertical_rubs"]), 0)
+        self.assertGreater(len(rep["outside_chord"]), 0)
+        text = format_review(rep)
+        self.assertIn("low_intervals", text)
+
+    def test_analysis_measures_k_lufs_bands_slope_and_stems(self):
+        from engine.analysis import analyze_song_mix, analyze_wav
+
+        song = Song("MixQA", bpm=120, room=0.2)
+        bass = song.track("bass", "osc_sine", volume=0.7, pan=-0.2)
+        bass.seq("C2 - G2 -", step=0.5)
+        lead = song.track("lead", "osc_sine", volume=0.9, pan=0.2)
+        lead.seq("C5 E5 G5 E5", step=0.5)
+
+        wav_path = os.path.join(self.tmp, "mix.wav")
+        stems_dir = os.path.join(self.tmp, "multi_track")
+        song.render(wav_path)
+        song.export_stems(stems_dir, keep_pan=False)
+
+        qa = analyze_wav(wav_path, reference_genre="pop")
+        self.assertIn("k_weighted_lufs", qa)
+        self.assertIn("bands_pct", qa)
+        self.assertAlmostEqual(sum(qa["bands_pct"].values()), 100.0, delta=1.5)
+        self.assertIn("spectral_slope_db_per_oct", qa)
+        self.assertIn("mono_fold_delta_db", qa)
+        self.assertLess(qa["peak"], 1.0)
+
+        full_qa = analyze_song_mix(wav_path, stems_dir=stems_dir, lead_stem="lead")
+        self.assertIn("lead_minus_accompaniment_db", full_qa)
+        self.assertTrue(full_qa["all_stems_centered"])
+
 
 if __name__ == "__main__":
     unittest.main()

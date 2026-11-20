@@ -8,12 +8,12 @@ This plugin specializes in composing, arranging, mixing, and rendering **instrum
 - When the user requests activation of the plugin or assigns a music production task to it:
   1. **ALWAYS activate `soundfont-music` as the primary orchestrating execution skill**.
   2. **Simultaneously scan and activate the specialist producer skills** in `music_maker_plugin/skills/` (and load specialist agents in `music_maker_plugin/agents/` as needed):
-     - `producer-mindset-workflow` — Production brief, creative constraints, unblocking, dramatic arc, subtractive arranging, finishing discipline.
-     - `genre-style-encyclopedia` — Authentic BPM, rhythm/harmony pillars, global musical idioms, hybrid blending.
-     - `music-theory-harmony` — Scales, modes, functional/pop/jazz harmony, voice leading, counterpoint, motifs.
-     - `groove-rhythm-drums` — Drum kit roles, pocket, humanization, ghost notes, `3+3+2`, kick-bass composite locking.
-     - `orchestration-arrangement` — Register spacing, Rimsky-Korsakov blending & economy of colour, idiomatic pedal/strum/arpeggio writing, song form.
-     - `mixing-timbre-mastering` — Lavengood timbre oppositions, Moore's 5 layers, 3D Sound-Box balance, anti-mud, centered-pan `multi_track/` stem QA, NumPy audio verification.
+     - `producer-mindset-workflow` — Production brief, Song Planner approval gate (`No House Style`, wildcard), 12-word creative seed, moods/character words, unblocking, dramatic arc, subtractive arranging, finishing discipline.
+     - `genre-style-encyclopedia` — Authentic BPM, 7-Axis Style Maps & cross-style borrowing, 10 genre playbooks, global musical idioms.
+     - `music-theory-harmony` — Scales, modes, functional/pop/jazz harmony, voice leading, counterpoint, climax & motif craft.
+     - `groove-rhythm-drums` — Drum kit roles, pocket, humanization, ghost notes, `3+3+2`, kick-bass composite locking, 729 classic drum patterns & Groove MIDI empirical stats.
+     - `orchestration-arrangement` — Register spacing, low-interval hygiene, Rimsky-Korsakov blending & economy of colour, idiomatic piano/organ/pedal/strum/arpeggio writing, song form.
+     - `mixing-timbre-mastering` — Lavengood timbre oppositions, Moore's 5 layers, 3D Sound-Box balance, anti-mud, centered-pan `multi_track/` stem QA, K-weighted LUFS & commercial spectral-slope verification.
 
 ## 2. Learn from All MIDI Projects Before Starting Work (`midi/`)
 

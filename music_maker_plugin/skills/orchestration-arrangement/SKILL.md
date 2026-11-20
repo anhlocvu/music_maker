@@ -36,11 +36,12 @@ Execute these 5 steps before writing multi-track arrangement code:
 |---|---|
 | Rimsky-Korsakov resonance ratios, blending, wind distribution, economy of colour | `references/orchestration/rimsky-korsakov-orchestration.md` |
 | OMT orchestration, attack-sustain, dovetailing, piano translation, 5 pop layers | `references/orchestration/omt-orchestration-and-pop-layers.md` |
+| Vertical hygiene, low-interval limits, accompaniment motion & orchestral scoring (`c80_db`) | `references/orchestration/arrangement-craft.md`, `orchestral-scoring.md` |
 | Instrument ranges, registers & timbral character | `references/orchestration/instruments-ranges-character.md` |
 | Chord voicing, register spacing, texture, doubling | `references/orchestration/voicing-and-texture.md` |
 | Layering, density arcs, thinning/thickening | `references/orchestration/arrangement-density.md` |
 | Choral / SATB ensemble writing | `references/orchestration/choral-writing.md` |
-| Idiomatic writing: piano, guitar, strings, winds, brass, vocals | `references/instrument-idiom/overview.md` + specific instrument file |
+| Idiomatic writing: piano, guitar, strings, winds, brass, vocals, chamber, organ | `references/instrument-idiom/overview.md`, `piano-and-chamber.md`, `organ.md` + specific instrument file |
 | Song forms, classical forms, transitions, energy arcs | `references/form/popular-song-forms.md`, `classical-forms.md`, `narrative-and-transitions.md`, `assets/form-templates.md` |
 
 ## Example Transformation

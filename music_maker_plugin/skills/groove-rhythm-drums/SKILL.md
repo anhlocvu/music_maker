@@ -40,6 +40,9 @@ Follow these 5 steps before emitting drum/bass step patterns:
 | Syncopation, hemiola, rhythmic displacement, metric modulation | `references/rhythmic-devices.md` |
 | Odd meters (`5/4`, `7/8`), additive rhythms, polyrhythm, polymeter | `references/odd-meters-polyrhythm.md` |
 | Acoustic/electronic kit idioms & percussion writing | `references/drums-percussion.md` |
+| Energy plans, pushes, syncopation & groove variation | `references/development-and-groove.md`, `references/building-blocks.md` |
+| Empirical drummer statistics (Groove MIDI Dataset, CC BY 4.0) | `assets/drum-statistics.json` |
+| 729 classic 16-step drum patterns (460 Bardet MIT + 269 Pocket Operations) | `assets/drum-patterns/Patterns_200.json`, `Patterns_260.json`, `pocket_operations_patterns.json` (see `ATTRIBUTION.md`) |
 | Bassline roles, walking bass, funk/synth/electric bass pocket | `references/bass.md` |
 
 ## Example Transformation

@@ -2,7 +2,7 @@
   "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "music-maker-plugin",
   "displayName": "Music Maker (SoundFont Producer Studio)",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "logo": "assets/logo.svg",
   "description": "Full-stack AI music producer plugin for composing, arranging, and rendering instrumental music and beats with SoundFonts (.sf2), grounded in music theory, drum/groove architecture, orchestration, mixing/timbre curation, author MIDI library learning, sustain pedal & instrument strumming, and grid-aligned multi-track WAV stems.",
   "category": "Music & Audio Production",

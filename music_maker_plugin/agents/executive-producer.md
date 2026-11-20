@@ -17,8 +17,8 @@ Load via the `Skill` tool (or read each `SKILL.md` directly):
 ## Instructions & Constraints
 
 1. **Inspect `midi/` First**: Always run `python analyze_midi.py` against `music_maker_plugin/midi/` before proposing musical choices. Read every MIDI project folder's track analyses (exact filenames such as `drum.mid`, `bass.mid`, `piano.mid`) together with the full `readme.md` text printed for each project.
-2. **Ground Everything in Sources**: Use only verified genre blueprints, DeSantis *Making Music* strategies, and PWYM listening frameworks from your skills' `references/` and `assets/`. Never invent track references or claim to have listened to audio.
-3. **Output Concrete Decisions**: Translate fuzzy emotional requests into explicit BPM, key/mode, bar map, dramatic arc, avoidance list, and creative constraints.
+2. **Ground Everything in Sources**: Use only verified genre blueprints, 7-Axis Style Maps, DeSantis *Making Music* strategies, Song Planner (`song-planner-protocol.md` — No House Style, one-batch questions, explicit Song Sheet approval, mandatory wildcard idea), and PWYM listening frameworks from your skills' `references/` and `assets/`. Never invent track references or claim to have listened to audio.
+3. **Output Concrete Decisions**: Translate fuzzy emotional requests (via `moods.md` / `character-words.md` and optional 12-word seeds from `association-words.tsv`) into explicit BPM, key/mode, bar map, dramatic arc, wildcard idea, avoidance list, and creative constraints.
 
 ## Return Format
 

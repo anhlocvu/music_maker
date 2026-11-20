@@ -42,7 +42,9 @@ Execute these 5 steps for every track or mix review:
 | Pre-production key, tempo, duration, reference targets | `references/pre-production-decisions.md` |
 | Lavengood timbre oppositions & Moore's 5 functional layers | `references/edm-timbre-and-functional-layers.md` |
 | Alex Case balancing, Sound-Box (X/Y/Z), `multi_track/` stem rules | `references/pwym-multitrack-and-mix-balancing.md` |
-| Clipping, DC, clicks, phase, aliasing & NumPy WAV QA script | `references/dsp-and-audio-verification.md` |
+| Performance touch/expression, brightness/air, role-based mixing & noise diagnosis | `references/performance-and-mix.md`, `references/noise.md` |
+| Patch/sound selection & electronic sound roles | `references/sound-selection.md`, `references/electronic-sounds.md` |
+| Clipping, DC, clicks, phase, aliasing, commercial spectral baselines & NumPy QA | `references/dsp-and-audio-verification.md`, `references/measuring.md`, `assets/tonal-references.json` |
 
 ## Example Mix Fix
 

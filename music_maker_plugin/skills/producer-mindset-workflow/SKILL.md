@@ -38,6 +38,9 @@ Execute these 5 steps whenever launching, unblocking, or finishing a project:
 | Expanding loops, depth planes, fuzzy boundaries, dramatic arc, automation | `references/making-music-progressing.md` |
 | Arranging subtractively, erasing clutter, forms, endings, finishing discipline | `references/making-music-finishing.md` |
 | Critical listening, Perceived Space Graph, Musical Structure Graph | `references/pwym-producer-listening-and-structure.md` |
+| Song-sheet planning gate, No House Style, wildcard idea, user riff/reference rules | `references/song-planner-protocol.md` |
+| Empirical mood cues & listener adjective dimensions (bright, warm, epic, etc.) | `references/moods.md`, `references/character-words.md` |
+| 12-word anti-cliché association seed pool (1,000 categorized words) | `assets/association-words.tsv` |
 | Reference-track digging & copyright-safe style translation | `references/reference-track-digging.md`, `style-reference-and-copyright.md` |
 | Brainstorming, user-agent collaboration, revision loops, answer calibration | `references/creative-workflows/*`, `references/workflow.md`, `critique-and-feedback.md` |
 | Templates, brainstorming cards, decision log, diagnostic checklists | `assets/session-brief-and-decision-log.md`, `diagnostic-checklists.md`, `musical-brainstorming-cards.md`, `response-templates.md` |

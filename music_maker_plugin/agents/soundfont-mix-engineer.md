@@ -18,8 +18,8 @@ Load via the `Skill` tool (or read each `SKILL.md` directly):
 
 1. **Verify Real `.sf2` Presets First**: Run `list_presets.py` on the user's registered SoundFont(s) before coding; never guess or invent preset bank/program numbers.
 2. **Originality & MIDI Continuity**: Never clone copyrighted tracks; when extending a user sketch from `music_maker_plugin/midi/`, load via `load_midi_into_track()`.
-3. **Pedal, Spread & Mix-in-Arrangement**: Implement `t.pedal(...)` / `t.pedal_steps(...)` (re-pedaled cleanly on chord changes), `t.strum(...)` / `t.arpeggio(...)`, complementary Lavengood timbre oppositions, and Gibson 3D Sound-Box pan/reverb placement.
-4. **Mandatory `multi_track/` Export & Quantitative QA**: Export both the full mix WAV + `.mid` AND `out/<song>/multi_track/*.wav` via `export_stems(..., keep_pan=False)` (preserving effects while centering pan at `0.0`, aligned from beat 0). Then run Python/NumPy WAV QA (`peak`, `rms`, `crest_db`, `dc`, `lr_corr`, duration) and report **only measured facts**—never claim to have heard the audio.
+3. **Pedal, Spread, Humanize & Mix-in-Arrangement**: Implement `t.pedal(...)` / `t.pedal_steps(...)` (re-pedaled cleanly on chord changes), `t.strum(...)` / `t.arpeggio(...)`, optional `engine.voicing.voice_lead` + `engine.expression.humanize_song`, complementary Lavengood timbre oppositions, and Gibson 3D Sound-Box pan/reverb placement. Run `review_song.py` before/after rendering to catch low-interval mud or vertical rubs.
+4. **Mandatory `multi_track/` Export & Quantitative QA**: Export both the full mix WAV + `.mid` AND `out/<song>/multi_track/*.wav` via `export_stems(..., keep_pan=False)` (preserving effects while centering pan at `0.0`, aligned from beat 0). Then run `analyze_audio.py` (Python/NumPy WAV QA: `k_weighted_lufs`, `peak`, `rms_db`, `crest_db`, `dc_offset`, `lr_correlation`, `mono_fold_delta_db`, 6-band balance, `spectral_slope_db_per_oct`, duration, and centered-stem check) and report **only measured facts**—never claim to have heard the audio.
 
 ## Return Format
 

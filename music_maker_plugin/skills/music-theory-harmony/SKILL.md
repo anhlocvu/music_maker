@@ -38,7 +38,9 @@ Before outputting notes or progressions, resolve these 5 steps in order:
 | Chords, T-S-D function, cadences, voice leading | `references/harmony/chord-construction.md`, `functional-harmony.md`, `voice-leading.md` |
 | Chromaticism, modulation, modal & jazz harmony, reharm | `references/harmony/chromatic-harmony.md`, `modulation.md`, `modal-harmony.md`, `jazz-harmony.md`, `reharmonization.md` |
 | Pop schemas, modal shuttles, fragile/absent/emergent tonics | `references/harmony/omt-pop-and-neo-riemannian-schemas.md` |
+| Harmonic rhythm, cadences, tonicization, sequences & reharmonization craft | `references/harmony/music-skill-harmony.md` |
 | Melody, motifs, phrases & DeSantis melodic/harmonic craft | `references/melody/melodic-construction.md`, `motivic-development.md`, `phrase-structure.md`, `de-santis-melody-and-harmony-strategies.md` |
+| Climax design, emotional response research (Sloboda/Huron) & melodic hooks | `references/melody/climax-and-melody.md` |
 | Counterpoint, formal/harmonic analysis, 20th-c. / microtonal | `references/counterpoint.md`, `references/analysis.md`, `references/techniques/*` |
 | Quick lookup cheatsheets & 12-TET YAML datasets | `assets/progressions-catalog.md`, `modes-cheatsheet.md`, `jazz-voicings.md`, `cadence-reference.md`, `intervals-and-scale-formulas.md`, `assets/data/*.yaml` |
 

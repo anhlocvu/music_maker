@@ -60,6 +60,8 @@ Execute these 4 steps whenever a style or hybrid is requested:
 | Folk, roots, regional & minor/hybrid scenes | `references/genres/folk-and-world.md`, `folk-roots-and-traditions.md`, `regional-scene-starters.md`, `minor-and-hybrid-genres.md` |
 | Musical theatre | `references/genres/musical-theatre.md` |
 | Western vs. Non-Western language taxonomy & trend matrices | `references/study-music-musical-languages.md`, `assets/trend-and-reference-matrices.md` |
+| 7-Axis Style Maps & cross-style axis borrowing | `references/style-maps.md`, `assets/style-maps.json`, `references/style-maps/style-map-*.md` |
+| Focused craft playbooks (anime, baroque, beats, electronic, film, game, jazz/funk, pop/ballad, rock/metal, scene) | `references/playbooks/*.md` |
 
 ## Example Genre Blueprint
 

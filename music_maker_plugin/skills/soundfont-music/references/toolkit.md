@@ -9,7 +9,15 @@
 | `engine/song.py` | `Song`, `Track`, step-string parser, pedal/strum/arpeggio, mixer + reverb, WAV/stems/MIDI/loop export |
 | `engine/midi_io.py` | `parse_midi_file`, `discover_midi_sources`, `load_midi_into_track` (notes + CC64 pedals) |
 | `engine/rpp.py` | `load_rpp(path)` reads a Reaper project into a Song |
+| `engine/harmony.py` | `parse(symbol)`, `chord_at(timeline, beat)`, `pitch_class`, `midi_to_name` |
+| `engine/voicing.py` | `voice_lead(...)` DP voice-leading with `LOW_INTERVAL_LIMITS` + `apply_voicings(...)` |
+| `engine/expression.py` | `humanize_track(...)` / `humanize_song(...)`: phase-correction timing, `1/f^beta` velocity drift, phrase arches, cymbal cycles |
+| `engine/patterns.py` | `list_patterns(...)`, `pattern_to_steps(...)` (729 classic drum patterns), `drum_stats_suggest(...)` (Groove MIDI stats) |
+| `engine/review.py` | `review_song(...)` & `format_review(...)`: detects low-interval mud, minor 2nd/9th rubs, parallels, static loops |
+| `engine/analysis.py` | `analyze_wav(...)` & `analyze_song_mix(...)`: K-weighted LUFS, 6-band balance, spectral slope vs `tonal-references.json`, stem check |
 | `render.py` | `python render.py [song ...]`; exports mix WAV, MIDI, and `out/<song>/multi_track/*.wav` stems |
+| `review_song.py` | `python review_song.py <song>` runs score-level diagnostics before/after rendering |
+| `analyze_audio.py` | `python analyze_audio.py out/<song>.wav --stems out/<song>/multi_track --ref pop` runs quantitative NumPy QA |
 | `analyze_midi.py` | `python analyze_midi.py [dir]` scans all MIDI project folders in `midi/` and outputs per-track MIDI analysis plus each project's full `readme.md` text |
 | `list_presets.py` | `python list_presets.py <font key> [search]` prints ready-to-paste tuples |
 

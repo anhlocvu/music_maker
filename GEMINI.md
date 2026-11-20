@@ -99,3 +99,37 @@ Chuyển kho `music_maker_plugin/midi/` sang mô hình **project MIDI** (mỗi p
    - Cập nhật `test_analyze_midi_reports_project_folders_and_full_readme` trong `music_maker_plugin/skills/soundfont-music/scripts/toolkit/tests/test_toolkit.py` và chạy `unittest`: **4/4 tests OK**.
    - Chạy `python music_maker_plugin/skills/soundfont-music/scripts/toolkit/analyze_midi.py` trên `music_maker_plugin/midi/`: hoạt động bình thường.
    - Chạy `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 7 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
+
+---
+
+## Phiên làm việc: 2026-11-20 — Tích hợp tài nguyên `tai lieu/` & Nâng cấp Toolkit v1.2.0
+
+### Mục tiêu
+Nghiên cứu và tích hợp có chọn lọc các tài liệu, dataset và mã nguồn MIT từ `tai lieu/` (`music-skill`, `dmp_midi` / `DrumMachinePatterns`, `ableton-pocket-operations`, và `SKILL.md` `song-planner`) vào hệ thống 7 skills, 4 agents và Python toolkit của `music_maker_plugin`, đảm bảo an toàn bản quyền và giữ tương thích ngược hoàn toàn.
+
+### Những thay đổi đã thực hiện
+
+1. **Bổ sung tri thức & dataset vào 6 Expert Skills**:
+   - `producer-mindset-workflow`: Thêm `references/song-planner-protocol.md` (No House Style, hỏi gom 1 lượt, Song Sheet có duyệt, wildcard, bảo toàn riff người dùng, chỉ mượn form), `references/moods.md`, `references/character-words.md`, và `assets/association-words.tsv` (1.000 từ gợi ý chủ đề chống rập khuôn).
+   - `genre-style-encyclopedia`: Thêm hệ thống **7-Axis Style Maps** (`references/style-maps.md`, `assets/style-maps.json`, 12 file `references/style-maps/style-map-*.md`) và 10 playbooks trong `references/playbooks/` (`anime-opening.md`, `baroque.md`, `beats.md`, `electronic.md`, `film-score.md`, `game-music.md`, `jazz-and-funk.md`, `pop-and-ballad.md`, `rock-and-metal.md`, `scene-music.md`).
+   - `music-theory-harmony`: Thêm `references/harmony/music-skill-harmony.md` và `references/melody/climax-and-melody.md`.
+   - `groove-rhythm-drums`: Thêm `references/development-and-groove.md`, `references/building-blocks.md`, `assets/drum-statistics.json` (Groove MIDI Dataset aggregate stats, CC BY 4.0) và kho 729 mẫu trống 16-step trong `assets/drum-patterns/` (`Patterns_200.json`, `Patterns_260.json` MIT + `pocket_operations_patterns.json` của Paul Wenzel kèm `ATTRIBUTION.md`).
+   - `orchestration-arrangement`: Thêm `references/orchestration/arrangement-craft.md`, `orchestral-scoring.md`, `references/instrument-idiom/piano-and-chamber.md`, `organ.md`.
+   - `mixing-timbre-mastering`: Thêm `references/performance-and-mix.md`, `measuring.md`, `noise.md`, `sound-selection.md`, `electronic-sounds.md`, và `assets/tonal-references.json`.
+
+2. **Nâng cấp `soundfont-music` Python Toolkit (`scripts/toolkit/`) theo TDD**:
+   - `engine/harmony.py`: Phân tích ký hiệu hợp âm (`parse`, `chord_at`, `pitch_class`, `midi_to_name`).
+   - `engine/voicing.py`: `voice_lead()` tối ưu dẫn bè bằng Quy hoạch động, `LOW_INTERVAL_LIMITS`, và `apply_voicings()`.
+   - `engine/expression.py`: `humanize_track()` / `humanize_song()` (linear phase correction, $1/f^\beta$ velocity drift, phrase arches, cymbal cycles).
+   - `engine/patterns.py`: `list_patterns()`, `pattern_to_steps()` (729 mẫu trống 16-step), `drum_stats_suggest()` (Groove MIDI stats).
+   - `engine/review.py` & `review_song.py`: Kiểm tra tổng phổ (low-interval mud, quãng 2 thứ/9 thứ, nốt ngoài hợp âm, quãng 5/8 song song, vòng lặp tĩnh $\ge 16$ ô nhịp).
+   - `engine/analysis.py` & `analyze_audio.py`: Đo lường WAV & `multi_track/` stems bằng NumPy (K-weighted LUFS, 6 dải tần, spectral slope so với `tonal-references.json`, mono fold-down, lead presence, kiểm tra stem centered pan).
+
+3. **Đồng bộ Plugin, Bản quyền & Agents**:
+   - Tạo `music_maker_plugin/THIRD_PARTY.md`, cập nhật `plugin.json` (`1.2.0`), `rules/AGENTS.md`, `agents/{executive-producer,groove-arranger,soundfont-mix-engineer}.md`, `soundfont-music/{SKILL.md,references/toolkit.md}`, và `README.md`.
+   - Không đưa thành phần GPL-3.0 (`surge_host.py`) hay dữ liệu nặng không dùng (`surge-catalog.json`) vào plugin.
+
+4. **Kiểm thử sau cùng**:
+   - `unittest` (`test_toolkit.py`): **9/9 tests OK**.
+   - `analyze_audio.py --help` & `py_compile review_song.py`: **OK**.
+   - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 7 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
