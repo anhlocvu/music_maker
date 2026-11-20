@@ -133,3 +133,31 @@ Nghiên cứu và tích hợp có chọn lọc các tài liệu, dataset và mã
    - `unittest` (`test_toolkit.py`): **9/9 tests OK**.
    - `analyze_audio.py --help` & `py_compile review_song.py`: **OK**.
    - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 7 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
+   - Sau đó đã xóa thư mục `music_maker_plugin/skills/soundfont-music/scripts/toolkit/tests/` (gồm `test_toolkit.py`) theo yêu cầu người dùng để tránh bị sao chép theo sang `music_toolkit/` khi làm nhạc; kiểm tra lại `agy plugin validate --strict music_maker_plugin` vẫn **Validation passed**.
+
+
+---
+
+## Phiên làm việc: 2026-11-20 — Kế thừa phong cách `midi/` & Xuất toàn bộ Notes/Pedal/Pitch Bend trong `analyze_midi.py`
+
+### Mục tiêu
+Cho phép và khuyến khích AI kế thừa/mô phỏng sâu phong cách phối khí của tác giả từ kho `music_maker_plugin/midi/` (cách đi hợp âm, rải hợp âm, velocity mạnh-nhẹ, sustain pedal CC64, pitch bend, groove/fill) kết hợp sáng tạo mới, đồng thời nâng cấp `analyze_midi.py` để in ra **toàn bộ nốt, toàn bộ sự kiện pedal CC64 và toàn bộ sự kiện pitch bend** thay vì chỉ tóm tắt.
+
+### Những thay đổi đã thực hiện
+
+1. **Nâng cấp phân tích & xuất đầy đủ sự kiện MIDI (`engine/midi_io.py`, `analyze_midi.py`)**:
+   - `parse_midi_file()`: Lưu đầy đủ danh sách `pitch_bends` (`beat`, `pitch`, `semitones`, có phát hiện RPN pitch-bend sensitivity mặc định ±2 st).
+   - `summarize_track()`: Bổ sung `velocity_std`, `ghost_note_ratio` (`vel < 60`), `micro_timing_avg_abs_offset_beats`, cùng danh sách đầy đủ `notes` (theo `bar`, `start_beat`, `dur_beats`, `note`, `vel`), `pedals` (`start_beat -> end_beat`), và `pitch_bends`.
+   - `format_markdown()` trong `analyze_midi.py`: Xuất toàn bộ `All Pedal CC64 Events`, `All Pitch Bend Events`, và `All Notes` gom theo từng `Bar` (kèm beat 0-based `@start_beat`, thời lượng, velocity) cùng toàn văn `readme.md` của từng project.
+
+2. **Cập nhật Quy tắc, Skills & Agents cho Author Style Adoption**:
+   - `music_maker_plugin/rules/AGENTS.md`: Đổi mục 2 thành *Learn & Adopt Style from All MIDI Projects (`midi/`)*, khẳng định không áp dụng luật chống clone lên `midi/` của tác giả và khuyến khích bắt chước 6 trụ cột phong cách (hợp âm/voicing, rải hợp âm, velocity, CC64 pedal, pitch bend, trống/fill) kết hợp sáng tạo giai điệu/cấu trúc mới.
+   - `music_maker_plugin/skills/soundfont-music/SKILL.md` & `references/toolkit.md`: Bổ sung ngoại lệ cho `midi/` và quy trình chuyển hóa thói quen từ `midi/` sang `strum`, `arpeggio`, `pedal`, `bends/glides`, `@vel`, `humanize_song`.
+   - `music_maker_plugin/skills/producer-mindset-workflow/` (`SKILL.md`, `references/song-planner-protocol.md`, `references/style-reference-and-copyright.md`): Làm rõ luật chống đạo nhạc chỉ áp dụng cho bài hát bên ngoài; kho `midi/` là *Signature Style Anchor* hợp lệ để mô phỏng sâu.
+   - `music_maker_plugin/agents/` (`executive-producer.md`, `composer-theorist.md`, `groove-arranger.md`, `soundfont-mix-engineer.md`) & `README.md`: Đồng bộ chỉ thị trích xuất và tái tạo Author Style DNA (cách đi hợp âm, rải, velocity, pedal, pitch bend).
+
+3. **Kiểm thử sau cùng**:
+   - `py_compile` (`midi_io.py`, `analyze_midi.py`): **OK**.
+   - Smoke test với project MIDI tổng hợp (rolled chord, velocity mạnh/ghost, CC64 pedal, pitchwheel `+4096` / `+1.000st`, `readme.md`): **SMOKE_TEST_OK**.
+   - Chạy `python analyze_midi.py` trên `music_maker_plugin/midi/` (`drum fill template1`, `my_ballad_beat`): hiển thị đầy đủ từng nốt, từng bar, thống kê human feel và `readme.md`.
+   - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 7 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).

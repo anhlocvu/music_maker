@@ -6,7 +6,9 @@ This file helps the agent respond when the user asks for music "in the style of"
 
 ## Core principle
 
-A style request should become a **craft-variable request**, not a clone request.
+> **Author's Own MIDI Library (`music_maker_plugin/midi/`) Exemption:** All anti-cloning and anti-imitation guardrails in this file apply **only to third-party copyrighted works and living artists**. The projects inside `music_maker_plugin/midi/` were created by the author personally—you **may and should closely emulate ("adopt")** their chord movement, chord strumming/rolling habits, velocity accents, CC64 sustain-pedal timing, pitch-bend inflections, and drum/bass groove as a living style foundation, blending them with fresh creative melodies and new variations.
+
+A style request for an **external** artist or song should become a **craft-variable request**, not a clone request.
 
 Instead of:
 

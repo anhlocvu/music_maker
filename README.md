@@ -26,7 +26,7 @@ music_maker_plugin/
 ## Tính năng chính
 
 1. **Điều phối đồng bộ**: `soundfont-music` là skill chính; khi kích hoạt plugin sẽ tự động nạp cùng toàn bộ các skill và agent chuyên môn khác trong plugin.
-2. **Học kho project MIDI (`analyze_midi.py`)**: Trước khi sáng tác/phối khí, script quét toàn bộ các **thư mục project MIDI** trong `music_maker_plugin/midi/` (ví dụ `ballad beat/`), phân tích từng file track (`drum.mid`, `bass.mid`, `piano.mid`...) và xuất kèm **toàn bộ nội dung `readme.md`** của từng project để AI nắm đúng phong cách, BPM và ý đồ phối khí.
+2. **Học & kế thừa phong cách kho project MIDI (`analyze_midi.py`)**: Trước khi sáng tác/phối khí, script quét toàn bộ các **thư mục project MIDI** trong `music_maker_plugin/midi/` (ví dụ `ballad beat/`), xuất **toàn bộ nốt (beat, thời lượng, velocity), sự kiện Pedal CC64, sự kiện Pitch Bend**, thống kê cảm giác tay người và **toàn bộ nội dung `readme.md`** của từng project để AI nắm và bắt chước đúng phong cách phối khí của tác giả.
 3. **Pedal (Sustain CC 64) & Rải nhạc cụ**: Hỗ trợ `track.pedal()`, `track.pedal_steps()`, `track.strum()` và `track.arpeggio()` cho âm thanh piano/guitar/harp giàu độ vang và tự nhiên.
 4. **Xuất Multi-track Audio (`multi_track/`)**: `render.py` tự động xuất bản mix tổng, file `.mid` và thư mục `out/<song>/multi_track/` chứa từng track `.wav` căn chuẩn beat 0 — giữ nguyên hiệu ứng nhạc cụ (reverb, vibrato, release, bends) và đưa pan về giữa (`pan=0`) để tiện mix trong DAW.
 

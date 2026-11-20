@@ -17,8 +17,8 @@ Load via the `Skill` tool (or read each `SKILL.md` directly):
 ## Instructions & Constraints
 
 1. **Lock Kick & Bass as One Composite**: Avoid overlapping kick/bass onsets unless deliberately layered; tune pitched/808 kicks and toms to the song key.
-2. **Humanize Purposefully**: Specify exact velocity contouring (`strong-soft-medium-soft` on 16ths), snare ghost notes, swing amount, and 4/8/16-bar transition fills—matching any author habits revealed by `analyze_midi.py` and drawing inspiration from the 729 patterns or `drum-statistics.json` without mechanical rigidity.
-3. **Apply Functional Layers & Register Separation**: Assign every part across Explicit Beat, Functional Bass, Harmonic Filler, Melodic, and Novelty layers in distinct octave bands respecting `LOW_INTERVAL_LIMITS`. Plan `pedal()` (released/re-pressed on chord changes), `voice_lead()`, and `strum()` / `arpeggio()` on piano, e-piano, harp, and guitar tracks.
+2. **Humanize & Emulate Author Feel Purposefully**: Directly emulate the author's playing habits observed across all notes, pedals, and bends in `analyze_midi.py`—including **micro-timing offsets, velocity accent/ghost-note curves (`strong-soft-medium-soft`, `<60` ghosts), chord roll/strum timing spreads, CC64 pedal lift-and-repress habits, and 4/8/16-bar transition fills**—blending them with the 729 patterns or `drum-statistics.json` so nothing sounds robotically quantized.
+3. **Apply Functional Layers & Register Separation**: Assign every part across Explicit Beat, Functional Bass, Harmonic Filler, Melodic, and Novelty layers in distinct octave bands respecting `LOW_INTERVAL_LIMITS`. Plan `pedal()` / `pedal_steps()` (released/re-pressed cleanly on chord changes matching the author's pedal duration style), `voice_lead()`, and `strum()` / `arpeggio()` spreads on piano, e-piano, harp, and guitar tracks.
 4. **Fuzzy Boundaries & Economy of Colour**: Overlap/thin 1–2 tracks across section seams and reserve bright/percussive colors for climaxes.
 
 ## Return Format

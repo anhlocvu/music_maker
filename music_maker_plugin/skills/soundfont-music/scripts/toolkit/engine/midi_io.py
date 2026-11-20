@@ -69,7 +69,10 @@ def parse_midi_file(path):
         pedal_down = {}             # channel -> start_tick
         notes = []                  # (start_beat, dur_beats, key, vel, None)
         pedals = []                 # (start_beat, end_beat)
-        pitchwheel_count = 0
+        pitch_bends = []            # {"beat": float, "pitch": int, "semitones": float}
+        rpn_msb = {}
+        rpn_lsb = {}
+        bend_range_semitones = 2.0
 
         for msg in mtrack:
             tick += msg.time
@@ -78,16 +81,28 @@ def parse_midi_file(path):
             elif msg.type == "program_change":
                 programs[msg.channel] = msg.program
             elif msg.type == "pitchwheel":
-                pitchwheel_count += 1
-            elif msg.type == "control_change" and msg.control == 64:
+                pitch_bends.append({
+                    "beat": round(tick / tpb, 4),
+                    "pitch": int(msg.pitch),
+                    "semitones": round((msg.pitch / 8192.0) * bend_range_semitones, 3),
+                })
+            elif msg.type == "control_change":
                 ch = msg.channel
-                if msg.value >= 64 and ch not in pedal_down:
-                    pedal_down[ch] = tick
-                elif msg.value < 64 and ch in pedal_down:
-                    s_beat = pedal_down.pop(ch) / tpb
-                    e_beat = tick / tpb
-                    if e_beat > s_beat:
-                        pedals.append((s_beat, e_beat))
+                if msg.control == 101:
+                    rpn_msb[ch] = msg.value
+                elif msg.control == 100:
+                    rpn_lsb[ch] = msg.value
+                elif msg.control == 6 and rpn_msb.get(ch) == 0 and rpn_lsb.get(ch) == 0:
+                    if msg.value > 0:
+                        bend_range_semitones = float(msg.value)
+                elif msg.control == 64:
+                    if msg.value >= 64 and ch not in pedal_down:
+                        pedal_down[ch] = tick
+                    elif msg.value < 64 and ch in pedal_down:
+                        s_beat = pedal_down.pop(ch) / tpb
+                        e_beat = tick / tpb
+                        if e_beat > s_beat:
+                            pedals.append((s_beat, e_beat))
             elif msg.type == "note_on" and msg.velocity > 0:
                 channels[msg.channel] += 1
                 active[(msg.channel, msg.note)].append((tick, msg.velocity))
@@ -107,14 +122,16 @@ def parse_midi_file(path):
             if tick > s_tick:
                 pedals.append((s_tick / tpb, tick / tpb))
 
-        if not notes and not pedals:
+        if not notes and not pedals and not pitch_bends:
             continue
 
         notes.sort(key=lambda e: (e[0], e[2]))
         pedals.sort()
+        pitch_bends.sort(key=lambda b: b["beat"])
         track_end = max(
             max((s + d for s, d, _, _, _ in notes), default=0.0),
             max((e for _, e in pedals), default=0.0),
+            max((b["beat"] for b in pitch_bends), default=0.0),
         )
         max_beat = max(max_beat, track_end)
         primary_ch = channels.most_common(1)[0][0] if channels else 0
@@ -130,7 +147,9 @@ def parse_midi_file(path):
             "is_drum": is_drum,
             "notes": notes,
             "pedals": pedals,
-            "pitchwheel_count": pitchwheel_count,
+            "pitch_bends": pitch_bends,
+            "bend_range_semitones": bend_range_semitones,
+            "pitchwheel_count": len(pitch_bends),
         })
 
     return {
@@ -193,9 +212,10 @@ def _detect_rolled_chords(notes, max_gap=0.15):
 
 
 def summarize_track(track_data, beats_per_bar=4.0, file_name=""):
-    """Build a concise musical summary dict for one parsed MIDI track."""
+    """Build a complete musical summary dict (including all notes, pedals, and pitch bends) for one parsed MIDI track."""
     notes = track_data["notes"]
     pedals = track_data["pedals"]
+    pitch_bends = track_data.get("pitch_bends", [])
     vels = [n[3] for n in notes]
     keys = [n[2] for n in notes]
 
@@ -212,6 +232,34 @@ def summarize_track(track_data, beats_per_bar=4.0, file_name=""):
         tok in name_hint for tok in ("drum", "kit", "perc", "kick", "snare", "hat", "beat")
     )
 
+    vel_avg = round(sum(vels) / len(vels), 1) if vels else 0.0
+    vel_std = round((sum((v - vel_avg) ** 2 for v in vels) / len(vels)) ** 0.5, 1) if vels else 0.0
+    ghost_ratio = round(sum(1 for v in vels if v < 60) / len(vels), 3) if vels else 0.0
+    grid_offsets = [abs(s - round(s / 0.25) * 0.25) for s, _, _, _, _ in notes]
+    avg_grid_offset = round(sum(grid_offsets) / len(grid_offsets), 4) if grid_offsets else 0.0
+
+    detailed_notes = [
+        {
+            "bar": int(start // beats_per_bar) + 1,
+            "beat_in_bar": round((start % beats_per_bar) + 1.0, 4),
+            "start_beat": round(start, 4),
+            "dur_beats": round(dur, 4),
+            "key": int(key),
+            "note": DRUM_LABELS.get(key, key_to_name(key)) if looks_like_drum else key_to_name(key),
+            "vel": int(vel),
+        }
+        for start, dur, key, vel, _ in notes
+    ]
+
+    detailed_pedals = [
+        {
+            "start_beat": round(s, 4),
+            "end_beat": round(e, 4),
+            "dur_beats": round(e - s, 4),
+        }
+        for s, e in pedals
+    ]
+
     summary = {
         "name": track_data["name"],
         "channel": track_data["channel"],
@@ -220,12 +268,19 @@ def summarize_track(track_data, beats_per_bar=4.0, file_name=""):
         "is_drum_hint": looks_like_drum,
         "note_count": len(notes),
         "velocity_range": (min(vels), max(vels)) if vels else (0, 0),
-        "velocity_avg": round(sum(vels) / len(vels), 1) if vels else 0.0,
+        "velocity_avg": vel_avg,
+        "velocity_std": vel_std,
+        "ghost_note_ratio": ghost_ratio,
+        "micro_timing_avg_abs_offset_beats": avg_grid_offset,
         "pedal_count": len(pedals),
         "pedal_avg_beats": round(sum(e - s for s, e in pedals) / len(pedals), 2) if pedals else 0.0,
-        "pitchwheel_count": track_data["pitchwheel_count"],
+        "pedals": detailed_pedals,
+        "pitchwheel_count": len(pitch_bends),
+        "bend_range_semitones": track_data.get("bend_range_semitones", 2.0),
+        "pitch_bends": pitch_bends,
         "avg_notes_per_bar": round(avg_density, 1),
         "high_activity_bars": fill_bars[:12],
+        "notes": detailed_notes,
     }
 
     if looks_like_drum:

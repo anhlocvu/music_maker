@@ -5,6 +5,7 @@ Usage:
     python analyze_midi.py path/to/midi     # scans a custom MIDI library or project folder
     python analyze_midi.py --json           # outputs JSON instead of Markdown
 """
+from collections import defaultdict
 import json
 import os
 import re
@@ -57,6 +58,7 @@ def analyze_directory(target_path):
                 "relative_path": rel_path.replace("\\", "/"),
                 "bpm": parsed["bpm"],
                 "time_signature": parsed["time_signature"],
+                "beats_per_bar": parsed["beats_per_bar"],
                 "total_beats": parsed["total_beats"],
                 "total_bars": parsed["total_bars"],
                 "tracks": track_summaries,
@@ -106,7 +108,9 @@ def format_markdown(target_path, report):
                 vel_lo, vel_hi = tr["velocity_range"]
                 lines.append(
                     f"- **Track `{tr['name']}`** (ch={tr['channel']}, prog={tr['program']}:{tr['program_name']}, "
-                    f"notes={tr['note_count']}, vel={vel_lo}..{vel_hi} avg {tr['velocity_avg']}, "
+                    f"notes={tr['note_count']}, vel={vel_lo}..{vel_hi} avg {tr['velocity_avg']} std {tr.get('velocity_std', 0)}, "
+                    f"ghost<60={round(tr.get('ghost_note_ratio', 0) * 100, 1)}%, "
+                    f"micro_offset={tr.get('micro_timing_avg_abs_offset_beats', 0)}b, "
                     f"avg_notes/bar={tr['avg_notes_per_bar']})"
                 )
                 if tr["pedal_count"]:
@@ -114,7 +118,10 @@ def format_markdown(target_path, report):
                         f"  - Pedal CC64: {tr['pedal_count']} lần (giữ TB {tr['pedal_avg_beats']} beats)"
                     )
                 if tr["pitchwheel_count"]:
-                    lines.append(f"  - Pitch Bend events: {tr['pitchwheel_count']}")
+                    lines.append(
+                        f"  - Pitch Bend events: {tr['pitchwheel_count']} "
+                        f"(range ±{tr.get('bend_range_semitones', 2.0)} st)"
+                    )
                 if tr["high_activity_bars"]:
                     lines.append(f"  - Bars nhiều hoạt động / Fill gợi ý: {tr['high_activity_bars']}")
                 if tr.get("is_drum_hint"):
@@ -122,12 +129,37 @@ def format_markdown(target_path, report):
                     lines.append(f"  - Drum pieces: {pieces or 'N/A'}")
                 else:
                     pr = tr.get("pitch_range")
+                    pr_text = f"{pr[0]}..{pr[1]}" if pr else "N/A"
                     lines.append(
-                        f"  - Range: {pr[0]}..{pr[1]} | Key ước lượng: {tr.get('estimated_key')} | "
+                        f"  - Range: {pr_text} | Key ước lượng: {tr.get('estimated_key')} | "
                         f"Chords: rolled={tr.get('rolled_chords', 0)}, block={tr.get('block_chords', 0)}"
                     )
-                    if tr.get("opening_notes"):
-                        lines.append(f"  - Opening: {' '.join(tr['opening_notes'])}")
+
+                pedals = tr.get("pedals", [])
+                if pedals:
+                    ped_items = [f"{p['start_beat']}->{p['end_beat']}({p['dur_beats']}b)" for p in pedals]
+                    lines.append(f"  - **All Pedal CC64 Events ({len(pedals)})**: " + ", ".join(ped_items))
+
+                bends = tr.get("pitch_bends", [])
+                if bends:
+                    bend_items = [f"@{b['beat']}:{b['pitch']}({b['semitones']:+.3f}st)" for b in bends]
+                    lines.append(f"  - **All Pitch Bend Events ({len(bends)})**: " + ", ".join(bend_items))
+
+                all_notes = tr.get("notes", [])
+                if all_notes:
+                    bpb = f.get("beats_per_bar", 4.0)
+                    by_bar = defaultdict(list)
+                    for n in all_notes:
+                        by_bar[n["bar"]].append(n)
+                    lines.append(f"  - **All Notes ({len(all_notes)})**:")
+                    for bar_num in sorted(by_bar):
+                        bar_start = round((bar_num - 1) * bpb, 3)
+                        bar_end = round(bar_num * bpb, 3)
+                        tokens = " | ".join(
+                            f"@{n['start_beat']} {n['note']}(d={n['dur_beats']},v={n['vel']})"
+                            for n in by_bar[bar_num]
+                        )
+                        lines.append(f"    - Bar {bar_num} ({bar_start}..{bar_end}): {tokens}")
             lines.append("")
 
         if group["is_folder"]:
