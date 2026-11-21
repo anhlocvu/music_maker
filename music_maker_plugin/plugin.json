@@ -4,7 +4,7 @@
   "displayName": "Music Maker (SoundFont Producer Studio)",
   "version": "1.2.0",
   "logo": "assets/logo.svg",
-  "description": "Full-stack AI music producer plugin for composing, arranging, and rendering instrumental music and beats with SoundFonts (.sf2), grounded in music theory, drum/groove architecture, orchestration, mixing/timbre curation, author MIDI library learning, sustain pedal & instrument strumming, and grid-aligned multi-track WAV stems.",
+  "description": "Full-stack AI music producer plugin for composing, arranging, and rendering instrumental music and beats with SoundFonts (.sf2), grounded in music theory, drum/groove architecture, orchestration, mixing/timbre curation, internalized MIDI-map craft, sustain pedal & instrument strumming, and grid-aligned multi-track WAV stems.",
   "category": "Music & Audio Production",
   "keywords": [
     "music",
@@ -22,7 +22,7 @@
     "pedal"
   ],
   "suggestedPrompts": [
-    "Activate music_maker_plugin, analyze my midi/ library, and compose an original instrumental beat with full multi_track stems.",
+    "Activate music_maker_plugin and compose an original instrumental beat with expressive dynamics, pedal sustain, and full multi_track stems.",
     "Design a melancholic neo-soul or cinematic piano-and-strings arrangement with pedal sustain, strummed voicings, and verified WAV/MIDI output."
   ],
   "license": "MIT"

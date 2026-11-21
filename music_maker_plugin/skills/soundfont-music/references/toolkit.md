@@ -18,7 +18,7 @@
 | `render.py` | `python render.py [song ...]`; exports mix WAV, MIDI, and `out/<song>/multi_track/*.wav` stems |
 | `review_song.py` | `python review_song.py <song>` runs score-level diagnostics before/after rendering |
 | `analyze_audio.py` | `python analyze_audio.py out/<song>.wav --stems out/<song>/multi_track --ref pop` runs quantitative NumPy QA |
-| `analyze_midi.py` | `python analyze_midi.py [dir]` scans all MIDI project folders in `midi/` and outputs **all notes (with exact beat, duration, velocity), all CC64 pedal intervals, all pitch-bend events**, human-feel stats, plus each project's full `readme.md` text |
+| `analyze_midi.py` | Optional CLI analyzer (`python analyze_midi.py [dir]`) used by `tools/generate_midi_map.py` to build `music_maker_plugin/midi_map.md` or inspect a single standalone `.mid`/folder |
 | `list_presets.py` | `python list_presets.py <font key> [search]` prints ready-to-paste tuples |
 
 ## Song and Track

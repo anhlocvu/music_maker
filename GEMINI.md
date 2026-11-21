@@ -161,3 +161,28 @@ Cho phép và khuyến khích AI kế thừa/mô phỏng sâu phong cách phối
    - Smoke test với project MIDI tổng hợp (rolled chord, velocity mạnh/ghost, CC64 pedal, pitchwheel `+4096` / `+1.000st`, `readme.md`): **SMOKE_TEST_OK**.
    - Chạy `python analyze_midi.py` trên `music_maker_plugin/midi/` (`drum fill template1`, `my_ballad_beat`): hiển thị đầy đủ từng nốt, từng bar, thống kê human feel và `readme.md`.
    - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 7 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
+
+---
+
+## Phiên làm việc: 2026-11-21 — Chiến lược Bản đồ MIDI (`tools/` → `midi_map.md`) & Tối ưu Quy tắc bằng `llm-prompt-optimizer`
+
+### Mục tiêu
+Tránh tràn ngữ cảnh khi kho `midi/` có nhiều project bằng cách tạo script sinh bản đồ tĩnh ở `/tools` xuất ra `music_maker_plugin/midi_map.md`, đồng thời áp dụng `llm-prompt-optimizer` (RSCIT, positive instructions, prompt compression) để chuyển quy trình sang tra cứu `midi_map.md` rộng, liên tục ở mọi công đoạn, mô phỏng 100% phong cách phối nhưng hoàn toàn **âm thầm & nội tại hóa** (không lộ nguồn kho MIDI với người dùng cộng đồng).
+
+### Những thay đổi đã thực hiện
+
+1. **Công cụ tạo Bản đồ MIDI ngoài plugin (`tools/`)**:
+   - `tools/generate_midi_map.py`: Tái sử dụng `analyze_midi.py` / `engine/midi_io.py` (kèm `sys.dont_write_bytecode = True`), tính toán hai lượt (two-pass) để sinh mục lục `1. Project Index` và `2. Instrument & Track Lookup` (ưu tiên phân loại theo tên file/track trước `program_name` mặc định) với dải dòng `L<start>-L<end>` chính xác 100%, theo sau bởi toàn bộ nốt theo bar, velocity, micro-timing, CC64 pedal, pitch bend và `readme.md` của từng project.
+   - `tools/generate_midi_map.bat`: Script Windows chạy nhanh bằng `uv` / `py` / `python` (hỗ trợ cờ `--no-pause`).
+   - Đã chạy sinh thử `music_maker_plugin/midi_map.md` (374 dòng, gồm `drum fill template1` và `my_ballad_beat`).
+
+2. **Tối ưu bộ Quy tắc, Skills, Agents & Tài liệu theo `llm-prompt-optimizer`**:
+   - Cập nhật `music_maker_plugin/rules/AGENTS.md`: Thay bước chạy `analyze_midi.py` bằng giao thức tra `midi_map.md` 2 pha (trước khi làm việc + tra không giới hạn trong mọi công đoạn piano/drum/bass/strings/synth/guitar...), bắt buộc tra rộng nhiều project/nhạc cụ không tự bó hẹp, mô phỏng 100% phong cách và tuyệt đối tra âm thầm không nhắc tới `midi_map.md`/`midi/` với người dùng cuối.
+   - Cập nhật đồng bộ `music_maker_plugin/skills/soundfont-music/SKILL.md`, `music_maker_plugin/skills/soundfont-music/references/toolkit.md`, `music_maker_plugin/skills/producer-mindset-workflow/` (`SKILL.md`, `references/song-planner-protocol.md`, `references/style-reference-and-copyright.md`), `music_maker_plugin/skills/music-theory-harmony/SKILL.md`, `music_maker_plugin/skills/groove-rhythm-drums/SKILL.md`.
+   - Cập nhật 4 agents trong `music_maker_plugin/agents/` (`executive-producer.md`, `composer-theorist.md`, `groove-arranger.md`, `soundfont-mix-engineer.md`), bỏ công cụ `Bash` khỏi `executive-producer.md` và chỉnh `Return Format` sang `Internalized Performance & Arrangement DNA` để không lộ nguồn cho người dùng cuối.
+   - Cập nhật `music_maker_plugin/plugin.json` (`suggestedPrompts` & `description` thân thiện cộng đồng) và `README.md`.
+
+3. **Kiểm thử sau cùng**:
+   - `uv run --with mido python -m py_compile tools/generate_midi_map.py`: **OK**.
+   - `cmd /c "tools\generate_midi_map.bat --no-pause"`: Sinh thành công `music_maker_plugin/midi_map.md` (374 dòng), phân loại chuẩn xác `Drums / Percussion`, `Bass`, `Guitar / Plucked`, `Strings / Pad`, `Piano / Keys`.
+   - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 7 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).

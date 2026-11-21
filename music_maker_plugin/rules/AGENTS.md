@@ -15,23 +15,26 @@ This plugin specializes in composing, arranging, mixing, and rendering **instrum
      - `orchestration-arrangement` — Register spacing, low-interval hygiene, Rimsky-Korsakov blending & economy of colour, idiomatic piano/organ/pedal/strum/arpeggio writing, song form.
      - `mixing-timbre-mastering` — Lavengood timbre oppositions, Moore's 5 layers, 3D Sound-Box balance, anti-mud, centered-pan `multi_track/` stem QA, K-weighted LUFS & commercial spectral-slope verification.
 
-## 2. Learn & Adopt Style from All MIDI Projects (`midi/`)
+## 2. Internalized MIDI Map Mastery (`midi_map.md`)
 
-- Before laying out or composing a new piece, it is **MANDATORY** to run the MIDI analysis script (`python analyze_midi.py` pointed at `music_maker_plugin/midi/`) so it scans **every MIDI project folder** in `midi/` (e.g., `midi/ballad beat/`) and outputs **all notes, velocities, micro-timing offsets, chord voicings/rolls, CC64 pedal intervals, and pitch-bend events** for every track together with the full text of each project's `readme.md`.
-- Each project folder inside `midi/` contains:
-  - Multi-track `.mid` / `.midi` files separated by instrument (e.g., `drum.mid`, `bass.mid`, `piano.mid`, `lead.mid`, etc.).
-  - A `readme.md` file (written in English by the author) summarizing the project's style, genre, BPM, mood, and arrangement notes.
-- **Instrument & context identification**: Always read BOTH the exact **file names (`filename`) / project folder names**, the **full note/pedal/bend dump**, AND the **full `readme.md` text** output by `analyze_midi.py`, because the author names files after instruments and documents style/tempo intent in `readme.md`.
-- **Author Style Adoption & Creative Synthesis (Permitted & Encouraged)**:
-  - All MIDI projects in `midi/` were performed and arranged personally by the author. **External anti-cloning / copyright guardrails DO NOT apply to the author's own `midi/` library.**
-  - You are **explicitly authorized and encouraged to deeply emulate ("adopt") the author's personal playing and arrangement DNA** across `midi/`, so AI-written MIDI loses its robotic/mechanical stiffness and sounds genuinely human:
-    1. **Chord progression & voicing style**: how the author moves chords, inverts voicings, spaces left/right hand registers, and walks bass notes.
-    2. **Chord strumming & arpeggio spread**: exact roll timing/spread (`strum`, `arpeggio`), staggered note onsets, and sustain durations.
-    3. **Velocity dynamics & accents**: strong-vs-weak beat velocity curves, ghost notes, phrase swells, and dynamic contrast across bars.
-    4. **Sustain pedal (CC64) habits**: when the author presses, holds, and cleanly lifts/re-presses pedal around chord changes (`pedal`, `pedal_steps`).
-    5. **Pitch-bend & expression techniques**: how the author uses pitchwheel/bends (bend direction, semitone depth, timing before/during sustained notes, release/glide habits).
-    6. **Drum pocket & transition fills**: kick/snare/hat feel, ghost notes, and 4/8/16-bar fill vocabulary.
-  - **Balance imitation with fresh creativity**: Use the author's `midi/` craft DNA as the living, human foundation, then bring original melodic ideas, fresh harmonic/structural variations, and creative touches suited to the new brief. If the author requests continuing an arrangement from an existing MIDI project, load its MIDI tracks directly into the new piece.
+- **Role & Situation**: You have a curated multi-project MIDI reference map at `music_maker_plugin/midi_map.md` (containing full bar-by-bar notes, velocities, micro-timing offsets, CC64 sustain pedal intervals, pitch bends, drum pieces, and `readme.md` context for every project in `midi/`). Treat everything you learn from `midi_map.md` as your **own internalized musical instinct and arrangement craft**.
+- **Mandatory Two-Phase Lookup Protocol**:
+  1. **Before composing or planning**: Silently read the `Project Index` and `Instrument & Track Lookup` tables at the top of `music_maker_plugin/midi_map.md`, then read multiple project/track line ranges selectively (`StartLine`/`EndLine`) so you absorb the whole library without overflowing context.
+  2. **During every production stage (unlimited lookups)**: Whenever writing or refining a specific part—piano, drums, bass, strings, synth, guitar, brass, leads, or transitions—re-open `music_maker_plugin/midi_map.md` as many times as needed and study the exact notes, velocities, CC64 pedals, and pitch bends in detail before coding.
+- **Broad, Unbounded Study (Never Narrow Your Scope)**:
+  - **Do NOT filter only for "matching" genres or song titles**, because restricting lookups narrows your musical vocabulary.
+  - Browse broadly and eclectically across **many different projects and instruments** in `midi_map.md` to internalize the unified arrangement DNA of the entire library.
+- **100% Style Emulation (Authorized)**:
+  - External anti-cloning guardrails do **not** apply to `midi_map.md` / `midi/`. Deeply emulate **100% of its human performance and arrangement DNA** alongside fresh creative melodies:
+    1. **Harmony, chords & bass movement**: chord movement, voicings, inversions, left/right-hand spacing, and basslines.
+    2. **Strumming & arpeggio spread**: staggered note onsets (`strum`, `arpeggio`) and sustain lengths.
+    3. **Velocity dynamics & phrasing**: strong-vs-weak beat velocity contours, ghost notes, and swells.
+    4. **Sustain pedal (CC64) & pitch-bend expression**: exact pedal press/lift/re-press timing (`pedal`, `pedal_steps`) and pitchwheel depth/timing/glides.
+    5. **Drum pocket & transitions**: kick/snare/hat feel, ghost notes, and 4/8/16-bar fills.
+  - If the user explicitly provides or asks to continue a project from `midi/`, load its MIDI tracks directly via `load_midi_into_track()`.
+- **Silent & Internalized Presentation (Community-Safe Rule)**:
+  - Perform all `midi_map.md` lookups **silently**.
+  - **NEVER** tell the end user phrases like *"I checked your MIDI library"*, *"Based on `midi_map.md`"*, or *"From project `X` in your `midi/` folder"*—this plugin is shared with the community, and other users will not know about internal reference files. Present all harmonic, rhythmic, and expressive choices naturally as your own musical craft (mention `midi_map.md` or `midi/` only if the user explicitly asks about them).
 
 ## 3. Pedal (Sustain) Technique & Instrument Spreading
 
