@@ -8,7 +8,7 @@ This plugin specializes in composing, arranging, mixing, and rendering **instrum
 - When the user requests activation of the plugin or assigns a music production task to it:
   1. **ALWAYS activate `soundfont-music` as the primary orchestrating execution skill**.
   2. **Simultaneously scan and activate the specialist producer skills** in `music_maker_plugin/skills/` (and load specialist agents in `music_maker_plugin/agents/` as needed):
-     - `producer-mindset-workflow` — Production brief, Song Planner approval gate (`No House Style`, wildcard), 12-word creative seed, moods/character words, unblocking, dramatic arc, subtractive arranging, finishing discipline.
+     - `producer-mindset-workflow` — Production brief, Song Planner approval gate (Signature House Style from `midi_map.md`, optional wildcard), 12-word creative seed, moods/character words, unblocking, dramatic arc, subtractive arranging, finishing discipline.
      - `genre-style-encyclopedia` — Authentic BPM, 7-Axis Style Maps & cross-style borrowing, 10 genre playbooks, global musical idioms.
      - `music-theory-harmony` — Scales, modes, functional/pop/jazz harmony, voice leading, counterpoint, climax & motif craft.
      - `groove-rhythm-drums` — Drum kit roles, pocket, humanization, ghost notes, `3+3+2`, kick-bass composite locking, 729 classic drum patterns & Groove MIDI empirical stats.
@@ -24,12 +24,13 @@ This plugin specializes in composing, arranging, mixing, and rendering **instrum
 - **Broad, Unbounded Study (Never Narrow Your Scope)**:
   - **Do NOT filter only for "matching" genres or song titles**, because restricting lookups narrows your musical vocabulary.
   - Browse broadly and eclectically across **many different projects and instruments** in `midi_map.md` to internalize the unified arrangement DNA of the entire library.
-- **100% Style Emulation (Authorized)**:
-  - External anti-cloning guardrails do **not** apply to `midi_map.md` / `midi/`. Deeply emulate **100% of its human performance and arrangement DNA** alongside fresh creative melodies:
-    1. **Harmony, chords & bass movement**: chord movement, voicings, inversions, left/right-hand spacing, and basslines.
+- **100% Unchained House Style & Direct Reuse (Authorized)**:
+  - Treat `music_maker_plugin/midi_map.md` (and `music_maker_plugin/midi/`) as your **native Signature House Style**. ALL anti-cloning, "No House Style", forced-wildcard, and anti-imitation guardrails apply **ONLY to external third-party copyrighted songs**, NEVER to `midi_map.md`.
+  - Never hesitate or water down the style: you are explicitly authorized and encouraged to **directly reuse, adapt, or 100% emulate** its chord progressions, voicings, basslines, drum grooves & fills, strum/arpeggio spreads, CC64 pedal timing, and **exact pitch-bend / vibrato-by-bend phrasing curves**, pairing them with fresh melodies or requested variations:
+    1. **Harmony, chords & bass movement**: chord progressions, voicings, inversions, left/right-hand spacing, and basslines (including chromatic approaches and octave leaps).
     2. **Strumming & arpeggio spread**: staggered note onsets (`strum`, `arpeggio`) and sustain lengths.
     3. **Velocity dynamics & phrasing**: strong-vs-weak beat velocity contours, ghost notes, and swells.
-    4. **Sustain pedal (CC64) & pitch-bend expression**: exact pedal press/lift/re-press timing (`pedal`, `pedal_steps`) and pitchwheel depth/timing/glides.
+    4. **Sustain pedal (CC64) & multi-stage pitch-bend expression**: exact pedal press/lift/re-press timing (`pedal`, `pedal_steps`) AND full pitch-bend craft (`Track.bend(...)`, `D5^E5^D5`, `D5~E5`, `bend_release`, `delayed_bend`, `pre_bend`, `dive`, `vibrato` curves) on lead guitar, bass, strings, and solo leads—never leave expressive solo/lead/bass lines flat when sustained notes, blue-note approaches, phrase peaks, or transitions call for bends.
     5. **Drum pocket & transitions**: kick/snare/hat feel, ghost notes, and 4/8/16-bar fills.
   - If the user explicitly provides or asks to continue a project from `midi/`, load its MIDI tracks directly via `load_midi_into_track()`.
 - **Silent & Internalized Presentation (Community-Safe Rule)**:

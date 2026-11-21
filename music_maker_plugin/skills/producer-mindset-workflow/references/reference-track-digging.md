@@ -18,7 +18,9 @@ For current references, pair this with `web-music-trend-research.md`. If the use
 
 ## Ethical and creative guardrails
 
-- Extract **craft variables**, not melodies, lyrics, signature riffs, or distinctive recordings.
+> **Scope Note:** These anti-copying rules apply **only to external third-party copyrighted songs/artists**. They do **not** restrict `music_maker_plugin/midi_map.md`, which is your authorized Signature House Style for 100% direct reuse and emulation.
+
+- Extract **craft variables**, not melodies, lyrics, signature riffs, or distinctive recordings from external tracks.
 - Avoid imitating a living artist's exact style or vocal identity.
 - If a reference is highly recognizable, use multiple references so the result is a blend, not a clone.
 - For traditional or regional music, do not treat one track as the whole tradition. Study several examples and, when possible, work with practitioners.

@@ -404,14 +404,58 @@ def discover_midi_sources(root_dir):
     return groups
 
 
+def _attach_pitch_bends_to_notes(notes, pitch_bends, bpm):
+    """Map channel pitch-bend events onto overlapping MIDI note events as ('points', False, ...)."""
+    if not pitch_bends or not notes:
+        return list(notes)
+    sec_per_beat = 60.0 / max(float(bpm or 120.0), 1.0)
+    bends_sorted = sorted(pitch_bends, key=lambda b: b["beat"])
+    enriched = []
+    idx = 0
+    current_semi = 0.0
+    n_bends = len(bends_sorted)
+
+    for start, dur, key, vel, existing_bend in notes:
+        if existing_bend is not None:
+            enriched.append((start, dur, key, vel, existing_bend))
+            continue
+        end = start + dur
+        while idx < n_bends and bends_sorted[idx]["beat"] < start - 1e-6:
+            current_semi = float(bends_sorted[idx]["semitones"])
+            idx += 1
+
+        pts = []
+        if abs(current_semi) > 1e-4:
+            pts.append((0.0, round(current_semi, 4)))
+
+        j = idx
+        while j < n_bends and bends_sorted[j]["beat"] <= end + 1e-6:
+            rel_sec = max(0.0, (bends_sorted[j]["beat"] - start) * sec_per_beat)
+            semi = round(float(bends_sorted[j]["semitones"]), 4)
+            if pts and abs(rel_sec - pts[-1][0]) < 1e-6:
+                pts[-1] = (round(rel_sec, 5), semi)
+            else:
+                pts.append((round(rel_sec, 5), semi))
+            j += 1
+
+        has_bend = any(abs(s) > 1e-4 for _, s in pts)
+        note_bend = ("points", False, tuple(pts)) if has_bend and len(pts) >= 1 else None
+        enriched.append((start, dur, key, vel, note_bend))
+    return enriched
+
+
 def load_midi_into_track(song, name, midi_path, instrument, track_index=0, **track_kw):
-    """Import notes and CC64 sustain pedals from a MIDI file into a new Song Track."""
+    """Import notes, CC64 sustain pedals, and pitch bends from a MIDI file into a new Song Track."""
     parsed = parse_midi_file(midi_path)
     if not parsed["tracks"]:
         raise ValueError(f"No note or pedal events found in {midi_path}")
     src = parsed["tracks"][track_index]
+    track_kw.setdefault("bend_range", src.get("bend_range_semitones", 2.0))
     track = song.track(name, instrument, **track_kw)
-    track.events.extend(src["notes"])
+    notes_with_bends = _attach_pitch_bends_to_notes(
+        src["notes"], src.get("pitch_bends", []), parsed.get("bpm", song.bpm)
+    )
+    track.events.extend(notes_with_bends)
     track.pedals.extend(src["pedals"])
     track._cursor = track.length()
     return track

@@ -128,6 +128,8 @@ Fast test: make the bridge either *thinner and more intimate* or *more harmonica
 
 ## Too close to a reference
 
+>Applies **only** to external third-party commercial references (never to `music_maker_plugin/midi_map.md`, whose style, chords, fills, and pitch-bend idioms may be reused 100%).
+
 | Check | Symptom | Fix |
 |---|---|---|
 | Melody contour | Same peaks and rhythm as reference | Change interval skeleton and phrase length |

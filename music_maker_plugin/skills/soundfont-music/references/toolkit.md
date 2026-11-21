@@ -11,7 +11,7 @@
 | `engine/rpp.py` | `load_rpp(path)` reads a Reaper project into a Song |
 | `engine/harmony.py` | `parse(symbol)`, `chord_at(timeline, beat)`, `pitch_class`, `midi_to_name` |
 | `engine/voicing.py` | `voice_lead(...)` DP voice-leading with `LOW_INTERVAL_LIMITS` + `apply_voicings(...)` |
-| `engine/expression.py` | `humanize_track(...)` / `humanize_song(...)`: phase-correction timing, `1/f^beta` velocity drift, phrase arches, cymbal cycles |
+| `engine/expression.py` | `humanize_track(...)` / `humanize_song(...)`, `expressive_bends(...)`, `make_bend_curve(...)`: timing/velocity humanization + phrasing-aware pitch bends |
 | `engine/patterns.py` | `list_patterns(...)`, `pattern_to_steps(...)` (729 classic drum patterns), `drum_stats_suggest(...)` (Groove MIDI stats) |
 | `engine/review.py` | `review_song(...)` & `format_review(...)`: detects low-interval mud, minor 2nd/9th rubs, parallels, static loops |
 | `engine/analysis.py` | `analyze_wav(...)` & `analyze_song_mix(...)`: K-weighted LUFS, 6-band balance, spectral slope vs `tonal-references.json`, stem check |
@@ -49,6 +49,8 @@ be filled directly via `t.events` (used for generated patterns like accelerating
 | `\|` | bar line (ignored) |
 | `C5@60` | velocity |
 | `D5^E5` | guitar-style bend: start D5, bend up to E5 in ~0.1 s, hold |
+| `D5^E5^D5` / `D5^+2^0` | bend-and-release: start D5, bend smoothly to peak (E5 / +2st), release to end (D5 / 0st) |
+| `D5~E5` | delayed bend-release: hold clean D5 first, swell up to E5 mid-note, release back to D5 |
 | `B5>E4` | glide: slide evenly from B5 to E4 over the note |
 | `kick snare hat ohat crash ride tom1..4 clap rim tamb shaker cowbell ...` | GM drum names |
 For non-GM kits (e.g. GS ETHNIC: E2 hyoshigi, F#2/G2 kotsuzumi, D6 shaker) use note names.
@@ -79,6 +81,26 @@ t.arpeggio("A3+C4+E4+G4", step=0.25, beats=4.0, pattern="updown", vel=82, hold=T
 t.pedal(0, 3.95)                  # đạp từ beat 0, nhả nhẹ trước beat 4
 t.pedal_steps(step=4.0, lift=0.05) # tự động đạp/nhả lại mỗi 4 beats
 ```
+
+## Multi-Stage Pitch Bend & Vibrato-by-Bend
+```python
+from engine import expression
+
+# 1. Preset bends (bend_release, delayed_bend, pre_bend, scoop, dive, bend_vibrato, glide)
+t.bend("G5", beats=2.0, style="bend_release", semis=2.0, vel=94)
+t.bend("F2", beats=2.0, style="delayed_bend", semis=2.0, vel=88)   # bass hold -> bend +2st -> release
+t.bend("C5", beats=1.5, style="dive", semis=1.5, vel=90)           # dive down -1.5st -> return
+t.bend("A5", beats=3.0, style="bend_vibrato", semis=0.75, vibrato_waves=3)
+
+# 2. Custom multi-point curve in beats or normalized (0..1)
+t.bend("D5", beats=2.0, unit="beats",
+       curve=[(0.0, 0.0), (0.3, 2.0), (0.9, 2.0), (1.4, 0.0), (1.8, -1.0), (2.0, 0.0)])
+
+# 3. Attach bend to the last added note(s), or auto-enrich sustained/peak notes
+t.seq("G5 - - -", step=0.5).bend_last(style="bend_release", semis=2.0)
+expression.expressive_bends(t, role="guitar", seed=42, max_semi=2.0, min_dur=0.75)
+```
+Note: `export_midi()` automatically emits **RPN `0,0` (Pitch Bend Sensitivity)** when bends exceed `±2` semitones, and `load_midi_into_track()` imports both CC64 pedals and pitch-bend curves.
 
 ## Output
 - `song.render("out/x.wav")` -> normalized array (and WAV if a path is given).

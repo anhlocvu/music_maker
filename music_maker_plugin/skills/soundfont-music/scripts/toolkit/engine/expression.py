@@ -9,6 +9,8 @@ import math
 
 import numpy as np
 
+from .sf2 import build_bend_curve as make_bend_curve
+
 ROLE_DEFAULTS = {
     "melody": {"timing_sd": 6.0, "short_sd": 2.0, "vel_pct": 3.0, "high_loud": 0.3, "arch": 6.0, "spread": 0.0, "lead": 0.0, "gate_sd": 0.02},
     "countermelody": {"timing_sd": 6.0, "short_sd": 2.0, "vel_pct": 3.0, "high_loud": 0.2, "arch": 4.0, "spread": 8.0, "lead": 0.0, "gate_sd": 0.0},
@@ -136,3 +138,62 @@ def humanize_song(song, roles=None, overrides=None, seed=1):
         role = roles.get(tr.name, "drums" if "drum" in tr.name.lower() else "bass" if "bass" in tr.name.lower() else "texture")
         report[tr.name] = humanize_track(tr, role=role, seed=seed, overrides=overrides.get(tr.name), bpm=song.bpm)
     return report
+
+
+_ROLE_BEND_STYLES = {
+    "guitar": ("bend_release", "delayed_bend", "bend_vibrato", "scoop", "dive"),
+    "lead": ("bend_release", "delayed_bend", "bend_vibrato", "scoop"),
+    "bass": ("delayed_bend", "dive", "scoop"),
+    "strings": ("scoop", "bend_vibrato", "delayed_bend"),
+    "synth": ("scoop", "bend_release", "bend_vibrato"),
+}
+
+
+def expressive_bends(track, role="lead", seed=1, max_semi=2.0, min_dur=0.75, intensity=0.7):
+    """Enrich sustained or phrase-peak notes on `track` with natural pitch-bend curves.
+
+    Never overwrites notes that already have an explicit `bend`. Returns a summary dict.
+    """
+    if not track.events:
+        return {"notes": 0, "bends_added": 0}
+
+    rng = _rng(seed, f"{track.name}:bends")
+    styles = _ROLE_BEND_STYLES.get(role, _ROLE_BEND_STYLES["lead"])
+    cap = max(0.25, float(max_semi))
+    prob = max(0.0, min(1.0, float(intensity)))
+    indexed = sorted(enumerate(track.events), key=lambda item: (item[1][0], item[1][2]))
+
+    new_events = list(track.events)
+    added = 0
+    for pos_idx, (orig_idx, (start, dur, key, vel, bend)) in enumerate(indexed):
+        if bend is not None:
+            continue
+        prev_key = indexed[pos_idx - 1][1][2] if pos_idx > 0 else key
+        next_key = indexed[pos_idx + 1][1][2] if pos_idx + 1 < len(indexed) else key
+        is_peak = key > prev_key and key >= next_key
+        effective_min = min_dur * (0.65 if is_peak else 1.0)
+        if dur < effective_min:
+            continue
+        if float(rng.random()) > (0.95 if is_peak and dur >= min_dur else prob):
+            continue
+
+        style = styles[int(rng.integers(0, len(styles)))]
+        if style == "bend_vibrato":
+            semis = round(min(cap, 0.35 + 0.35 * float(rng.random())), 2)
+            waves = 3 if dur >= 1.5 else 2
+        elif style == "scoop":
+            semis = round(min(cap, 0.5 if role == "strings" else 1.0), 2)
+            waves = 2
+        elif role == "bass":
+            semis = round(min(cap, 1.0 if dur < 2.0 else 2.0), 2)
+            waves = 2
+        else:
+            semis = round(min(cap, 2.0 if (dur >= 1.5 and is_peak) else 1.0), 2)
+            waves = 3
+
+        curve = make_bend_curve(style=style, semis=semis, smooth=True, vibrato_waves=waves)
+        new_events[orig_idx] = (start, dur, key, vel, curve)
+        added += 1
+
+    track.events = new_events
+    return {"notes": len(new_events), "bends_added": added}

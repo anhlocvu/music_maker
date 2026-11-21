@@ -12,12 +12,14 @@ Write parts as step strings, one token per step:
       B5>E4  glide/slide: start at B5 and slide evenly to E4 over the note length
 Drum parts use drum names instead of notes: "kick . snare . kick kick snare ."
 """
+import math
 import os
+import re
 import wave
 import numpy as np
 from scipy.signal import fftconvolve
 
-from .sf2 import SoundFont
+from .sf2 import SoundFont, build_bend_curve
 from . import instruments
 
 SR = 44100
@@ -45,7 +47,8 @@ def note_number(name):
 
 class Track:
     def __init__(self, song, name, instrument, volume=1.0, pan=0.0, reverb=0.25,
-                 transpose=0, release=None, cents=0, vibrato=None, autopan=None):
+                 transpose=0, release=None, cents=0, vibrato=None, autopan=None,
+                 bend_range=2.0):
         self.song, self.name = song, name
         self.instrument = instrument
         self.volume, self.pan, self.reverb = volume, pan, reverb
@@ -57,6 +60,7 @@ class Track:
         # sweep across the stereo field based on when it starts
         self.autopan = autopan
         self.release = release
+        self.bend_range = float(bend_range)
         self.events = []  # (start_beat, beats, key, velocity, bend or None)
         self.pedals = []  # (start_beat, end_beat) sustain pedal CC64 intervals
 
@@ -132,6 +136,91 @@ class Track:
         self._cursor = span_end
         return self
 
+    @staticmethod
+    def _parse_bend_target(spec, base_key):
+        """Convert either a note name ('E5') or relative semitone ('+2', '-1.5') to semitone offset."""
+        s = spec.strip()
+        try:
+            return float(s)
+        except ValueError:
+            return float(note_number(s) - base_key)
+
+    @classmethod
+    def _parse_step_bend(cls, nm):
+        """Parse inline bend syntax: ^ (bend or bend-release), ~ (delayed bend-release), > (glide)."""
+        if "^" in nm:
+            parts = nm.split("^")
+            base_nm = parts[0]
+            base_key = note_number(base_nm)
+            if len(parts) == 2:
+                return base_nm, (cls._parse_bend_target(parts[1], base_key), "bend")
+            if len(parts) >= 3:
+                p1 = cls._parse_bend_target(parts[1], base_key)
+                p2 = cls._parse_bend_target(parts[2], base_key)
+                return base_nm, ("norm", True, ((0.0, 0.0), (0.24, p1), (0.52, p1), (0.82, p2), (1.0, p2)))
+        if "~" in nm:
+            parts = nm.split("~")
+            base_nm = parts[0]
+            base_key = note_number(base_nm)
+            p1 = cls._parse_bend_target(parts[1], base_key)
+            p2 = cls._parse_bend_target(parts[2], base_key) if len(parts) >= 3 else 0.0
+            return base_nm, ("norm", True, ((0.0, 0.0), (0.22, 0.0), (0.48, p1), (0.64, p1), (0.88, p2), (1.0, p2)))
+        if ">" in nm:
+            base_nm, to = nm.split(">", 1)
+            base_key = note_number(base_nm)
+            return base_nm, (cls._parse_bend_target(to, base_key), "glide")
+        return nm, None
+
+    def _build_bend_spec(self, curve=None, style="bend_release", semis=2.0,
+                         smooth=True, unit="norm", vibrato_waves=3):
+        """Normalize an explicit curve or named preset into a hashable bend spec."""
+        if curve is not None:
+            pts = []
+            for t_val, s_val in curve:
+                t_sec = self.song.beats_to_sec(float(t_val)) if unit == "beats" else float(t_val)
+                pts.append((round(t_sec, 6), round(float(s_val), 5)))
+            tag = "norm" if unit == "norm" else "points"
+            return (tag, bool(smooth), tuple(pts))
+        return build_bend_curve(style=style, semis=semis, smooth=smooth, vibrato_waves=vibrato_waves)
+
+    def note(self, note, beats=1.0, at=None, vel=90, bend=None):
+        """Add a single note or '+' chord at `at` (defaults to cursor) with optional bend curve."""
+        pos = self._end() if at is None else float(at)
+        keys = self._parse_chord_keys(note, self.transpose)
+        v = max(1, min(127, int(vel)))
+        for k in keys:
+            self.events.append((pos, float(beats), k, v, bend))
+        self._cursor = pos + float(beats)
+        return self
+
+    def bend(self, note, beats=1.0, curve=None, style="bend_release", semis=2.0,
+             at=None, vel=90, smooth=True, unit="norm", vibrato_waves=3):
+        """Add a note/chord with a rich multi-point or preset pitch-bend curve."""
+        bend_spec = self._build_bend_spec(
+            curve=curve, style=style, semis=semis,
+            smooth=smooth, unit=unit, vibrato_waves=vibrato_waves,
+        )
+        return self.note(note, beats=beats, at=at, vel=vel, bend=bend_spec)
+
+    def bend_last(self, curve=None, style="bend_release", semis=2.0,
+                  smooth=True, unit="norm", vibrato_waves=3):
+        """Attach or replace the pitch-bend curve on the most recently added event(s)."""
+        if not self.events:
+            return self
+        bend_spec = self._build_bend_spec(
+            curve=curve, style=style, semis=semis,
+            smooth=smooth, unit=unit, vibrato_waves=vibrato_waves,
+        )
+        last_start = self.events[-1][0]
+        updated = []
+        for s, d, k, v, b in self.events:
+            if abs(s - last_start) < 1e-6:
+                updated.append((s, d, k, v, bend_spec))
+            else:
+                updated.append((s, d, k, v, b))
+        self.events = updated
+        return self
+
     def seq(self, text, step=0.25, at=None, vel=100, repeat=1):
         """Add a step pattern. `step` is in beats (0.25 = 16th notes).
         Starts at `at` beats (default: where this track last ended)."""
@@ -150,12 +239,8 @@ class Track:
                         if "@" in tok:
                             tok, v = tok.split("@")
                             v = int(v)
-                        for nm in tok.split("+"):
-                            bend = None
-                            for sym, kind in (("^", "bend"), (">", "glide")):
-                                if sym in nm:
-                                    nm, to = nm.split(sym)
-                                    bend = (note_number(to) - note_number(nm), kind)
+                        for nm in re.split(r"\+(?=[A-Za-z])", tok):
+                            nm, bend = self._parse_step_bend(nm)
                             pending.append([pos, step, note_number(nm) + self.transpose, v, bend])
                 pos += step
             self.events.extend(tuple(n) for n in pending)
@@ -377,13 +462,21 @@ class Song:
                 tr.append(mido.Message("program_change", channel=ch, program=prog % 128, time=0))
             tr.append(mido.Message("control_change", channel=ch, control=10,
                                    value=int((t.pan + 1) * 63.5), time=0))
+            bend_range = self._effective_bend_range(t)
+            if bends and abs(bend_range - 2.0) > 1e-6:
+                semi_int = max(1, min(24, int(round(bend_range))))
+                bend_range = float(semi_int)
+                tr.append(mido.Message("control_change", channel=ch, control=101, value=0, time=0))
+                tr.append(mido.Message("control_change", channel=ch, control=100, value=0, time=0))
+                tr.append(mido.Message("control_change", channel=ch, control=6, value=semi_int, time=0))
+                tr.append(mido.Message("control_change", channel=ch, control=38, value=0, time=0))
             msgs = []  # (tick, order, message kwargs)
             for s, b, k, v, bend in t.events:
                 msgs.append((int(s * tpb), 2, dict(type="note_on", note=max(0, min(127, k)), velocity=v)))
                 msgs.append((max(int(s * tpb), int((s + b) * tpb) - 1), 0,
                              dict(type="note_off", note=max(0, min(127, k)), velocity=0)))
                 if bends and (bend or t.vibrato) and b > 0:
-                    msgs.extend(self._pitchwheel(t, s, b, bend, tpb))
+                    msgs.extend(self._pitchwheel(t, s, b, bend, tpb, bend_range=bend_range))
             for p_start, p_end in t.pedals:
                 if p_end > p_start:
                     msgs.append((int(round(p_start * tpb)), 1, dict(type="control_change", control=64, value=127)))
@@ -397,22 +490,40 @@ class Song:
         mid.save(path)
         return path
 
-    def _pitchwheel(self, t, start, beats, bend, tpb):
+    @staticmethod
+    def _effective_bend_range(t):
+        """Determine pitch-wheel semitone range needed for all bends/vibrato on track `t`."""
+        max_semi = float(getattr(t, "bend_range", 2.0))
+        vib_semi = abs(float(t.vibrato[1])) / 100.0 if t.vibrato else 0.0
+        for _, _, _, _, bend in t.events:
+            if not bend:
+                continue
+            if bend[0] in ("norm", "points"):
+                peak = max((abs(float(s)) for _, s in bend[2]), default=0.0)
+            else:
+                peak = abs(float(bend[0]))
+            max_semi = max(max_semi, peak + vib_semi)
+        return max(2.0, float(math.ceil(max_semi - 1e-6)))
+
+    def _pitchwheel(self, t, start, beats, bend, tpb, bend_range=2.0):
         """Sample the note's pitch curve every ~15 ms as pitch-wheel messages."""
         from .sf2 import pitch_curve
         dur = self.beats_to_sec(beats)
         rate = 66  # messages per second
         n = max(2, int(dur * rate))
-        ratio = pitch_curve(int(dur * SR), SR, dur, t.vibrato, bend)[:: max(1, int(SR / rate))][:n]
+        n_samples = max(2, int(dur * SR))
+        curve = pitch_curve(n_samples, SR, dur, t.vibrato, bend)
+        step_idx = max(1, int(SR / rate))
+        ratio = curve[::step_idx][:n]
         out, prev = [], None
         for i, r in enumerate(ratio):
-            semis = 12 * np.log2(r)
-            val = int(max(-8192, min(8191, semis / 2.0 * 8192)))
+            semis = 12.0 * np.log2(r)
+            val = int(round(max(-8192, min(8191, semis / bend_range * 8192.0))))
             if val != prev:
-                tick = int((start + self.beats_to_sec(0) + i / rate * self.bpm / 60.0) * tpb)
+                tick = int(round((start + (i / rate) * self.bpm / 60.0) * tpb))
                 out.append((tick, 1, dict(type="pitchwheel", pitch=val)))
                 prev = val
-        out.append((int((start + beats) * tpb), 1, dict(type="pitchwheel", pitch=0)))
+        out.append((int(round((start + beats) * tpb)), 1, dict(type="pitchwheel", pitch=0)))
         return out
 
 

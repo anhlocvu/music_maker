@@ -295,18 +295,107 @@ def pitch_lfo(n, sr, rate=5.5, depth=30.0, delay=0.15, fade=0.2):
     return 2.0 ** (cents / 1200.0)
 
 
+def build_bend_curve(style="bend_release", semis=2.0, smooth=True, vibrato_waves=3):
+    """Build a hashable normalized pitch-bend curve ('norm', smooth, ((frac, semis), ...)).
+
+    Styles:
+      - 'bend_release': pick at 0, bend to `semis`, hold briefly, release to 0
+      - 'bend_hold':    pick at 0, bend fast to `semis`, hold until note end
+      - 'delayed_bend': hold clean at 0, bend up to `semis` mid-note, release to 0
+      - 'pre_bend':     start already bent at `semis`, release down to 0
+      - 'scoop':        start below by `-abs(semis)` and scoop smoothly up to 0
+      - 'dive':         hold 0, dive down to `-abs(semis)`, return to 0
+      - 'bend_vibrato': hand-played pitch-wheel vibrato waves (0 -> peak -> 0)
+      - 'glide':        linear slide from 0 to `semis` across the note
+    """
+    s = float(semis)
+    if style == "bend_hold":
+        pts = ((0.0, 0.0), (0.18, s), (1.0, s))
+    elif style == "delayed_bend":
+        pts = ((0.0, 0.0), (0.25, 0.0), (0.45, s), (0.68, s), (0.90, 0.0), (1.0, 0.0))
+    elif style == "pre_bend":
+        pts = ((0.0, s), (0.20, s), (0.68, 0.0), (1.0, 0.0))
+    elif style == "scoop":
+        pts = ((0.0, -abs(s)), (0.24, 0.0), (1.0, 0.0))
+    elif style == "dive":
+        d = -abs(s)
+        pts = ((0.0, 0.0), (0.35, 0.0), (0.62, d), (0.72, d), (0.92, 0.0), (1.0, 0.0))
+    elif style == "bend_vibrato":
+        waves = max(1, int(vibrato_waves))
+        start_f, end_f = 0.14, 0.94
+        span = (end_f - start_f) / waves
+        raw = [(0.0, 0.0), (start_f, 0.0)]
+        for idx in range(waves):
+            t0 = start_f + idx * span
+            amp = s * (1.0 - 0.10 * idx / max(1, waves))
+            raw.append((round(t0 + span * 0.45, 5), round(amp, 4)))
+            raw.append((round(t0 + span * 0.92, 5), 0.0))
+        raw.append((1.0, 0.0))
+        pts = tuple(raw)
+    elif style == "glide":
+        return ("norm", False, ((0.0, 0.0), (1.0, s)))
+    else:  # 'bend_release'
+        pts = ((0.0, 0.0), (0.22, s), (0.50, s), (0.82, 0.0), (1.0, 0.0))
+    return ("norm", bool(smooth), pts)
+
+
+def _eval_bend_points(n, sr, dur, points, smooth=True, normalized=False):
+    """Evaluate piecewise linear or smoothstep control points over `n` samples."""
+    if not points:
+        return np.zeros(n, dtype=np.float64)
+    scale = max(dur, 1e-3) if normalized else 1.0
+    pts = sorted((float(t) * scale, float(s)) for t, s in points)
+    dedup_t, dedup_s = [], []
+    for t_val, s_val in pts:
+        if dedup_t and abs(t_val - dedup_t[-1]) < 1e-9:
+            dedup_s[-1] = s_val
+        else:
+            dedup_t.append(t_val)
+            dedup_s.append(s_val)
+    t = np.arange(n, dtype=np.float64) / sr
+    if len(dedup_t) == 1:
+        return np.full(n, dedup_s[0], dtype=np.float64)
+    ts = np.asarray(dedup_t, dtype=np.float64)
+    ss = np.asarray(dedup_s, dtype=np.float64)
+    if not smooth:
+        return np.interp(t, ts, ss)
+    out = np.empty(n, dtype=np.float64)
+    out[t <= ts[0]] = ss[0]
+    out[t >= ts[-1]] = ss[-1]
+    for i in range(len(ts) - 1):
+        mask = (t >= ts[i]) & (t < ts[i + 1])
+        if not np.any(mask):
+            continue
+        u = (t[mask] - ts[i]) / max(ts[i + 1] - ts[i], 1e-9)
+        u = u * u * (3.0 - 2.0 * u)
+        out[mask] = ss[i] + (ss[i + 1] - ss[i]) * u
+    return out
+
+
 def pitch_curve(n, sr, dur, vibrato=None, bend=None):
     """Per-sample pitch ratio combining vibrato and a bend.
-    bend = (semitones, kind): kind "bend" rises quickly like a guitar string bend
-    (about 0.1 s, then holds), "glide" slides evenly across the whole note."""
+
+    Supports:
+      - `(semis, "bend")` / `(semis, "glide")` legacy 2-tuples
+      - `("norm", smooth, ((frac, semis), ...))` normalized over `dur`
+      - `("points", smooth, ((sec, semis), ...))` seconds from note start
+    """
     ratio = pitch_lfo(n, sr, *vibrato) if vibrato else np.ones(n)
     if bend:
-        semis, kind = bend
-        t = np.arange(n, dtype=np.float64) / sr
-        span = min(0.11, dur * 0.6) if kind == "bend" else max(dur, 1e-3)
-        x = np.clip(t / span, 0.0, 1.0)
-        shape = x * x * (3 - 2 * x) if kind == "bend" else x   # smoothstep for bends
-        ratio = ratio * 2.0 ** (semis * shape / 12.0)
+        tag = bend[0]
+        if tag in ("norm", "points"):
+            _, smooth, points = bend
+            semis_curve = _eval_bend_points(
+                n, sr, dur, points, smooth=bool(smooth), normalized=(tag == "norm")
+            )
+            ratio = ratio * 2.0 ** (semis_curve / 12.0)
+        else:
+            semis, kind = bend
+            t = np.arange(n, dtype=np.float64) / sr
+            span = min(0.11, dur * 0.6) if kind == "bend" else max(dur, 1e-3)
+            x = np.clip(t / span, 0.0, 1.0)
+            shape = x * x * (3 - 2 * x) if kind == "bend" else x   # smoothstep for bends
+            ratio = ratio * 2.0 ** (semis * shape / 12.0)
     return ratio
 
 

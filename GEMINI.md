@@ -186,3 +186,51 @@ Tránh tràn ngữ cảnh khi kho `midi/` có nhiều project bằng cách tạo
    - `uv run --with mido python -m py_compile tools/generate_midi_map.py`: **OK**.
    - `cmd /c "tools\generate_midi_map.bat --no-pause"`: Sinh thành công `music_maker_plugin/midi_map.md` (374 dòng), phân loại chuẩn xác `Drums / Percussion`, `Bass`, `Guitar / Plucked`, `Strings / Pad`, `Piano / Keys`.
    - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 7 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
+
+---
+
+## Phiên làm việc: 2026-11-21 — Mở xích `midi_map.md`, Nâng cấp Engine Multi-Point Pitch Bend & Tải Tài liệu `tai lieu/`
+
+### Mục tiêu
+1. Gỡ bỏ hoàn toàn các rào cản quy tắc (`No House Style`, `wildcard` bắt buộc, `Originality` gây dè chừng) đối với `music_maker_plugin/midi_map.md` để AI tự do tái sử dụng và mô phỏng 100% phong cách hòa âm, bass, trống, rải phím, CC64 pedal và kỹ thuật ben (pitch bend) của tác giả.
+2. Nâng cấp Python toolkit (`sf2.py`, `song.py`, `midi_io.py`, `expression.py`) để thực sự biết "ben" đa điểm như tay người chơi thật (bend-and-release, delayed bend, pre-bend, dive/scoop, vibrato-by-bend, RPN 0,0, import pitch bend từ MIDI).
+3. Giữ nguyên `analyze_midi.py`, `tools/generate_midi_map.py` và `music_maker_plugin/midi_map.md` (bỏ qua bước gom/tóm tắt pitchwheel theo yêu cầu người dùng).
+4. Tải các tài liệu chuyên sâu về biểu cảm guitar/bass/MIDI/SoundFont vào `tai lieu/` và ghi chú lại để xây dựng skill riêng sau này.
+
+### Những thay đổi đã thực hiện
+
+1. **Mở xích 100% phong cách `midi_map.md` (Signature House Style)**:
+   - `music_maker_plugin/rules/AGENTS.md`: Xác định `midi_map.md` là **Unchained Signature House Style**; cho phép tái sử dụng trực tiếp 100% vòng hợp âm, voicing, bassline, fill trống, strum/arpeggio, CC64 pedal và các đường cong pitch bend / vibrato-by-bend; đồng thời bắt buộc sử dụng bộ API bend đa điểm mới cho lead guitar, bass, strings, solo.
+   - `music_maker_plugin/skills/soundfont-music/SKILL.md`: Đổi mục *Originality* thành *Signature House Style (`midi_map.md`) & External Copyright*, giới hạn luật chống sao chép chỉ cho bài hát thương mại bên ngoài.
+   - `music_maker_plugin/skills/producer-mindset-workflow/` (`SKILL.md`, `references/song-planner-protocol.md`, `references/style-reference-and-copyright.md`, `references/reference-track-digging.md`, `assets/diagnostic-checklists.md`): Chuyển `No House Style` → `Signature Style First (No Generic AI Defaults)`, biến `[wildcard]` và `12-word seed` thành tùy chọn, ghi rõ ngoại lệ `midi_map.md` ở mọi checklist chống copy.
+   - `music_maker_plugin/agents/` (`executive-producer.md`, `composer-theorist.md`, `groove-arranger.md`, `soundfont-mix-engineer.md`): Đồng bộ quyền tái sử dụng trực tiếp `midi_map.md` và chỉ thị thiết kế/code multi-stage pitch bend.
+
+2. **Nâng cấp Engine Pitch Bend (`music_maker_plugin/skills/soundfont-music/scripts/toolkit/`)**:
+   - `engine/sf2.py`: Thêm `build_bend_curve(...)` (8 preset: `bend_release`, `bend_hold`, `delayed_bend`, `pre_bend`, `scoop`, `dive`, `bend_vibrato`, `glide`), `_eval_bend_points(...)`, và nâng cấp `pitch_curve(...)` hỗ trợ `("norm", smooth, points)` và `("points", smooth, points)` (tương thích ngược hoàn toàn với `(semis, "bend"/"glide")`).
+   - `engine/song.py`:
+     - Mở rộng step-string trong `Track.seq(...)` với `D5^E5^D5` / `D5^+2^0` (bend & release) và `D5~E5` (delayed bend-release), dùng `re.split(r"\+(?=[A-Za-z])", tok)` để không cắt nhầm dấu `+` trong bán cung tương đối.
+     - Thêm `Track.note(...)`, `Track.bend(...)`, `Track.bend_last(...)`, và tham số `Track(..., bend_range=2.0)`.
+     - Nâng cấp `Song.export_midi(...)` & `_pitchwheel(...)`: tự tính `bend_range` hiệu dụng và phát **RPN `0, 0`** (`CC101=0, CC100=0, CC6=range, CC38=0`) khi biên độ bend vượt `±2` semitones.
+   - `engine/midi_io.py`: Thêm `_attach_pitch_bends_to_notes(...)` và cập nhật `load_midi_into_track(...)` để nạp cả `pitch_bends` và `bend_range_semitones` khi import MIDI.
+   - `engine/expression.py`: Xuất `make_bend_curve` và thêm `expressive_bends(track, role=..., seed=..., max_semi=..., min_dur=..., intensity=...)` tự động bổ sung bend/vibrato cho các nốt ngân dài hoặc đỉnh câu nhạc (không ghi đè nốt đã có `bend`).
+   - `references/toolkit.md`: Bổ sung tài liệu API cho multi-stage pitch bend & `expressive_bends`.
+   - `tools/tests/test_toolkit_bends.py`: Bộ 7 unit tests bao phủ tương thích ngược, multi-point norm/sec, step-string `^` / `~`, render WAV + export MIDI kèm RPN `0,0`, round-trip `load_midi_into_track`, và `expressive_bends`.
+
+3. **Kho tài liệu đã tải về `tai lieu/` (để làm Skill sau)**:
+   - `tai lieu/dadagp/`:
+     - `DadaGP_ISMIR2021.pdf` (3.110.022 bytes) — Bài báo *DadaGP: A Dataset of Tokenized GuitarPro Songs for Sequence Models* (Sarmento et al., ISMIR 2021, arXiv:2107.14653).
+     - `dadagp.py` (91.943 bytes) & `README.md` (2.022 bytes) — Mã nguồn encoder/decoder GuitarPro (`.gp3/.gp4/.gp5`) sang token, chứa chuẩn hóa chi tiết các hiệu ứng `bend`, `pre-bend`, `bend-release`, `vibrato`, `slide`, `hammer-on/pull-off`, `palm mute`.
+     - `GTR_CTRL_ShredGP_2302.05393.pdf` (1.805.580 bytes) — Bài báo *ShredGP / Controllable Guitar Tablature Generation* (arXiv:2302.05393) về điều khiển phong cách & kỹ thuật chơi guitar.
+     - `Fretting_Transformer_2506.14223.pdf` (1.081.775 bytes) — Bài báo *Fretting-Transformer* (arXiv:2506.14223) về chuyển đổi MIDI sang tablature và thế bấm dây.
+   - `tai lieu/synthtab/`:
+     - `SynthTab_2309.09085.pdf` (605.921 bytes) — Bài báo *SynthTab: Leveraging Synthesized Data for Guitar Tablature Transcription* (arXiv:2309.09085), hướng dẫn map các kỹ thuật guitar (bends, vibrato, slides) sang MIDI CC / pitch bend / keyswitch khi tổng hợp âm thanh.
+   - `tai lieu/soundfont/`:
+     - `sfspec24.pdf` (530.464 bytes) — Đặc tả chính thức **SoundFont 2.04 Technical Specification** (RIFF chunks, modulators, pitch wheel → pitch generator, LFO vibrato, envelope).
+   - `tai lieu/midi_specs/`:
+     - `MPE-final-spec-notes.md` (7.775 bytes) — Ghi chú kiến trúc đặc tả **MIDI Polyphonic Expression (MPE)** (per-note pitch bend, RPN, channel allocation).
+     - `fluidsynth_devdoc.txt` (4.694 bytes) — Tài liệu lập trình kiến trúc SoundFont synth **FluidSynth v2.0**.
+   - *Ghi chú nguồn bị chặn mạng khi tải*: `KTH_rule_system_2006.pdf` (Friberg, Bresin & Sundberg, *Overview of the KTH rule system for musical performance*) không tải trực tiếp được do lỗi timeout/SSL từ `diva-portal.org` và `ac-psych.org`; khi làm skill sau có thể tải tay từ ResearchGate/KTH nếu cần bổ sung quy tắc *Melodic Charge* / *Phrase Arch*.
+
+### Kiểm thử sau cùng
+- `uv run python -B -m unittest discover -s tools/tests -v`: **7/7 tests OK**.
+- `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 7 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
