@@ -86,10 +86,39 @@ def symbolic_metrics(song, prompted_tracks=None, bpb=4.0, steps_per_bar=16):
     }
 
 
-def review_song(song, harmony=None, allow_parallels=True, bpb=4.0, prompted_tracks=None):
+def _bend_peak_semis(bend):
+    """Return peak signed semitone offset for a bend spec, or 0.0 if absent."""
+    if not bend:
+        return 0.0
+    if bend[0] in ("norm", "points"):
+        pts = bend[2]
+        if not pts:
+            return 0.0
+        # For scoop/pre-bend ending at 0, peak is the extreme offset; for bends, max abs offset
+        return float(max((s for _, s in pts), key=lambda x: abs(x)))
+    return float(bend[0])
+
+
+def _instrument_family(track):
+    """Map track instrument/name to broad orchestral family for register-clumping checks."""
+    _, bank, prog = instruments.resolve(track.instrument)
+    if bank >= 127:
+        return "drums"
+    n = f"{track.name} {track.instrument}".lower()
+    if any(k in n for k in ("horn", "trumpet", "trombone", "tuba", "brass")) or 56 <= prog <= 63:
+        return "brass"
+    if any(k in n for k in ("flute", "oboe", "clarinet", "bassoon", "sax", "piccolo", "wind")) or 64 <= prog <= 79:
+        return "woodwinds"
+    if any(k in n for k in ("violin", "viola", "cello", "contrabass", "string")) or (40 <= prog <= 45) or (48 <= prog <= 51):
+        return "strings"
+    return "other"
+
+
+def review_song(song, harmony=None, allow_parallels=True, bpb=4.0, prompted_tracks=None, scale=None):
     """Audit a Song's written notes and return structured musical review findings."""
     pitched = _active_events(song)
-    rubs, low_mud, outside = [], [], []
+    families = {tr.name: _instrument_family(tr) for tr in song.tracks}
+    rubs, low_mud, outside, register_clumps = [], [], [], []
     by_onset = defaultdict(list)
     for item in pitched:
         by_onset[round(item[1], 3)].append(item)
@@ -110,6 +139,9 @@ def review_song(song, harmony=None, allow_parallels=True, bpb=4.0, prompted_trac
                 low_mud.append({"at": _where(max(s1, s2), bpb), "tracks": (t1, t2), "pitches": (lo, hi), "semitones": span})
             if t1 != t2 and span in (1, 13) and overlap >= 0.5:
                 rubs.append({"at": _where(max(s1, s2), bpb), "tracks": (t1, t2), "pitches": (lo, hi), "semitones": span})
+            fam1 = families.get(t1, "other")
+            if t1 != t2 and fam1 in ("brass", "woodwinds", "strings") and fam1 == families.get(t2) and 1 <= span <= 2 and lo < 60 and overlap >= 0.5:
+                register_clumps.append({"at": _where(max(s1, s2), bpb), "family": fam1, "tracks": (t1, t2), "pitches": (lo, hi)})
 
     # Optional chord-timeline check on strong beats
     if harmony:
@@ -165,6 +197,32 @@ def review_song(song, harmony=None, allow_parallels=True, bpb=4.0, prompted_trac
             else:
                 run = 1
 
+    # Audit targeted pitch bends against scale / active chord
+    out_of_scale_bends = []
+    scale_pcs = harm.parse_scale(scale) if scale else None
+    sorted_h_bends = sorted(harmony, key=lambda x: x[0]) if harmony else None
+    if scale_pcs is not None or sorted_h_bends is not None:
+        for tr in song.tracks:
+            if _is_drum(tr):
+                continue
+            for s, _dur, k, _vel, bend in tr.events:
+                peak = _bend_peak_semis(bend)
+                if abs(peak) < 0.8:
+                    continue
+                target_key = int(k) + int(round(peak))
+                allowed = set(scale_pcs) if scale_pcs else set()
+                ch = harm.chord_at(sorted_h_bends, s) if sorted_h_bends else None
+                if ch:
+                    allowed |= ch["pcs"]
+                if allowed and (target_key % 12) not in allowed:
+                    out_of_scale_bends.append({
+                        "at": _where(s, bpb),
+                        "track": tr.name,
+                        "from": harm.midi_to_name(k),
+                        "to": harm.midi_to_name(target_key),
+                        "semis": round(peak, 2),
+                    })
+
     lengths = {tr.name: round(tr.length(), 3) for tr in song.tracks}
     metrics = symbolic_metrics(song, prompted_tracks=prompted_tracks, bpb=bpb)
     return {
@@ -173,7 +231,9 @@ def review_song(song, harmony=None, allow_parallels=True, bpb=4.0, prompted_trac
         "metrics": metrics,
         "low_intervals": low_mud[:30],
         "vertical_rubs": rubs[:30],
+        "register_clumps": register_clumps[:30],
         "outside_chord": outside[:30],
+        "out_of_scale_bends": out_of_scale_bends[:30],
         "parallels": parallels[:30],
         "static_loops": static_loops,
     }
@@ -188,7 +248,7 @@ def format_review(report):
             f"- metrics: PCE={m['pitch_class_entropy']:.3f} (norm={m['pce_norm']:.3f}) | "
             f"GC={m['groove_consistency']:.3f} | PIP={m['pip']:.3f} | UIP={m['uip']:.3f}"
         )
-    for key in ("low_intervals", "vertical_rubs", "outside_chord", "parallels", "static_loops"):
+    for key in ("low_intervals", "vertical_rubs", "register_clumps", "outside_chord", "out_of_scale_bends", "parallels", "static_loops"):
         items = report.get(key, [])
         lines.append(f"- {key}: {len(items)}")
         for it in items[:8]:

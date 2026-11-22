@@ -1,0 +1,69 @@
+# Counterpoint, Invertible Matrices, Set-Class Enumeration, Spectral & Schillinger Catalog
+
+invertible_counterpoint_matrices:
+  octave_15th:
+    magic_sum: 9
+    interval_map: {1: 8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8: 1}
+    critical_rule: "Treat P5 as dissonance (inverts to P4 above bass)."
+  tenth:
+    magic_sum: 11
+    interval_map: {1: 10, 2: 9, 3: 8, 4: 7, 5: 6, 6: 5, 7: 4, 8: 3, 9: 2, 10: 1}
+    critical_rule: "Forbid consecutive 3rds (become 8ves), consecutive 6ths (become 5ths), and similar motion."
+  twelfth:
+    magic_sum: 13
+    interval_map: {1: 12, 2: 11, 3: 10, 4: 9, 5: 8, 6: 7, 7: 6, 8: 5, 9: 4, 10: 3, 11: 2, 12: 1}
+    critical_rule: "6ths invert to 7ths: always prepare/resolve 6ths as if 7ths; 3rds invert freely to 10ths."
+
+species_suspensions:
+  above_cantus_firmus:
+    "7-6": {prep: consonance, susp: 7, res: 6, repeats_allowed: "max 3"}
+    "4-3": {prep: consonance, susp: 4, res: 3, repeats_allowed: "max 3"}
+    "9-8": {prep: consonance, susp: 9, res: 8, repeats_allowed: "NEVER consecutive (resolves to 8ve)"}
+  below_cantus_firmus:
+    "2-3": {prep: consonance, susp: 2, res: 3, repeats_allowed: "max 3 (standard cadential below re-do)"}
+    "5-6": {prep: consonance, susp: 5, res: 6, repeats_allowed: "max 3"}
+    "4-5": {prep: consonance, susp: 4, res: 5, repeats_allowed: "NEVER consecutive (resolves to P5)"}
+    "7-8": {avoid: true, reason: "Weak hollow resolution into octave"}
+
+hook_polya_enumeration_mod12:
+  raw_pc_sets: {0: 1, 1: 12, 2: 66, 3: 220, 4: 495, 5: 792, 6: 924, 7: 792, 8: 495, 9: 220, 10: 66, 11: 12, 12: 1}
+  tn_tni_set_classes: {0: 1, 1: 1, 2: 6, 3: 12, 4: 29, 5: 38, 6: 50, 7: 38, 8: 29, 9: 12, 10: 6, 11: 1, 12: 1, total: 224}
+  tn_only_set_classes: {0: 1, 1: 1, 2: 6, 3: 19, 4: 43, 5: 66, 6: 80, 7: 66, 8: 43, 9: 19, 10: 6, 11: 1, 12: 1, total: 352}
+
+key_post_tonal_sets:
+  tetrahedron_vertex_tetrachords_cohn:
+    - {vertex: "A", forte: "4-1", prime: [0, 1, 2, 3], icv: [3, 2, 1, 0, 0, 0], name: "Chromatic cluster"}
+    - {vertex: "B/C", forte: "4-9", prime: [0, 1, 6, 7], icv: [2, 0, 0, 0, 2, 2], name: "Double tritone-5th (Bartok/Berg)"}
+    - {vertex: "D", forte: "4-6", prime: [0, 1, 2, 7], icv: [2, 1, 0, 0, 2, 1], name: "Vertex D all-combinatorial tetrachord"}
+  symmetrical_edge_bc_tetrachords:
+    - {forte: "4-25", prime: [0, 2, 6, 8], icv: [0, 2, 0, 2, 0, 2], name: "French Aug-6th symmetrical"}
+    - {forte: "4-28", prime: [0, 3, 6, 9], icv: [0, 0, 4, 0, 0, 2], name: "Diminished 7th symmetrical"}
+  all_interval_z_tetrachords:
+    - {forte: "4-Z15", prime: [0, 1, 4, 6], icv: [1, 1, 1, 1, 1, 1]}
+    - {forte: "4-Z29", prime: [0, 1, 3, 7], icv: [1, 1, 1, 1, 1, 1]}
+  common_named_sets:
+    - {forte: "3-11", prime: [0, 3, 7], icv: [0, 0, 1, 1, 1, 0], name: "Major / Minor triad"}
+    - {forte: "4-14", prime: [0, 2, 3, 7], icv: [1, 1, 1, 1, 2, 0], name: "Minor triad add9 (Absil 4-14)"}
+    - {forte: "6-35", prime: [0, 2, 4, 6, 8, 10], icv: [0, 6, 0, 6, 0, 3], name: "Whole-tone scale"}
+
+twelve_tone_interval_operators:
+  prime_intervals: "ordered ascending differences d_k = (p_{k+1} - p_k) mod 12"
+  inversion_intervals: "(12 - d_k) mod 12 (for each k)"
+  retrograde_intervals: "reverse of inversion_intervals (12 - d_k reversed)"
+  retrograde_inversion_intervals: "reverse of prime_intervals"
+
+spectral_microtonal_partials_cents:
+  partial_3: {ratio: "3:1", cents_from_12tet: +2, note_C: G}
+  partial_5: {ratio: "5:1", cents_from_12tet: -14, note_C: E}
+  partial_7: {ratio: "7:1", cents_from_12tet: -31, note_C: Bb}
+  partial_11: {ratio: "11:1", cents_from_12tet: -49, note_C: "F# (mid-quartertone)"}
+  partial_13: {ratio: "13:1", cents_from_12tet: +41, note_C: "Ab (+41c)"}
+
+schillinger_binary_resultants:
+  "r(3:2)": {period: 6, durations: [2, 1, 1, 2]}
+  "r(4:3)": {period: 12, durations: [3, 1, 2, 2, 1, 3]}
+  "r(5:2)": {period: 10, durations: [2, 2, 1, 1, 2, 2]}
+  "r(5:3)": {period: 15, durations: [3, 2, 1, 3, 1, 2, 3]}
+  "r(5:4)": {period: 20, durations: [4, 1, 3, 2, 2, 3, 1, 4]}
+  "r(6:5)": {period: 30, durations: [5, 1, 4, 2, 3, 3, 2, 4, 1, 5]}
+  "r(7:4)": {period: 28, durations: [4, 3, 1, 4, 2, 2, 4, 1, 3, 4]}

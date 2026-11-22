@@ -1,0 +1,1 @@
+This is a sad guitar ballad solo section that showcases some bend techniques for the guitar.

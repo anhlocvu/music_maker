@@ -211,10 +211,103 @@ def _detect_rolled_chords(notes, max_gap=0.15):
     return rolled, block
 
 
-def summarize_track(track_data, beats_per_bar=4.0, file_name=""):
-    """Build a complete musical summary dict (including all notes, pedals, and pitch bends) for one parsed MIDI track."""
+def _dedupe_pedals(pedals, tol=0.02):
+    """Merge duplicate/overlapping CC64 pedal intervals recorded within `tol` beats."""
+    if not pedals:
+        return []
+    ordered = sorted((float(s), float(e)) for s, e in pedals if e > s)
+    if not ordered:
+        return []
+    out = [ordered[0]]
+    for s, e in ordered[1:]:
+        ps, pe = out[-1]
+        if abs(s - ps) <= tol and abs(e - pe) <= tol:
+            out[-1] = (min(ps, s), max(pe, e))
+        else:
+            out.append((s, e))
+    return out
+
+
+def _format_semis(val):
+    """Format signed semitone offset concisely (e.g. +2, +1.5, -0.35)."""
+    r = round(float(val), 2)
+    if abs(r) < 0.005:
+        return "0"
+    s = f"{r:+.2f}".rstrip("0").rstrip(".")
+    return s
+
+
+def _summarize_note_bend(base_key, bend_spec):
+    """Convert an attached bend spec on `base_key` into a concise target-aware label."""
+    if not bend_spec:
+        return None
+    if len(bend_spec) == 2 and isinstance(bend_spec[0], (int, float)):
+        semi_val = float(bend_spec[0])
+        if abs(semi_val) < 0.05:
+            return None
+        target_midi = max(0, min(127, int(base_key) + int(round(semi_val))))
+        return f"0->{_format_semis(semi_val)}st[{key_to_name(target_midi)}]"
+    if len(bend_spec) < 3:
+        return None
+    pts = bend_spec[2]
+    if not pts:
+        return None
+    semis = [float(s) for _, s in pts]
+    peak = max(semis, key=lambda x: abs(x))
+    if abs(peak) < 0.05:
+        return None
+
+    def _target(semi_val):
+        midi_val = max(0, min(127, int(base_key) + int(round(semi_val))))
+        return key_to_name(midi_val)
+
+    # Pitchwheel curves recorded after onset (> 0.02s) began at neutral 0 st
+    s0 = 0.0 if float(pts[0][0]) > 0.02 else semis[0]
+    s_end = semis[-1]
+    peak_nm = _target(peak)
+    if abs(peak) <= 0.65:
+        if len(semis) >= 4 and (max(semis) - min(semis)) >= 0.25 and abs(s_end) <= 0.25:
+            return f"vib({min(semis):+.2f}..{max(semis):+.2f}st)"
+        return f"0->{_format_semis(peak)}st[curl]"
+
+    if abs(s0) <= 0.25 and abs(s_end) <= 0.25:
+        total_t = max(float(pts[-1][0]), 1e-4)
+        first_move = next((float(t) for t, sv in pts if abs(sv) > 0.25), 0.0)
+        prefix = "delay:" if (first_move / total_t) >= 0.20 else ""
+        return f"{prefix}0->{_format_semis(peak)}->0st[{peak_nm}]"
+
+    if abs(s0) > 0.25 and abs(s_end - s0) <= 0.25:
+        return f"{_format_semis(s0)}st[held->{_target(s0)}]"
+
+    if abs(s0) > 0.25 and abs(s_end) <= 0.25:
+        if abs(peak) > abs(s0) + 0.35:
+            return f"{_format_semis(s0)}->{_format_semis(peak)}->0st[{peak_nm}->{key_to_name(base_key)}]"
+        return f"{_format_semis(s0)}->0st[{_target(s0)}->{key_to_name(base_key)}]"
+
+    if abs(s0) <= 0.25 and abs(s_end) > 0.25:
+        end_nm = _target(s_end)
+        if abs(peak - s_end) > 0.35:
+            return f"0->{_format_semis(peak)}->{_format_semis(s_end)}st[{peak_nm}->{end_nm}]"
+        return f"0->{_format_semis(s_end)}st[{end_nm}]"
+
+    return f"{_format_semis(s0)}->{_format_semis(peak)}->{_format_semis(s_end)}st[{peak_nm}]"
+
+
+def _is_note_pedaled(start, dur, pedals):
+    """True when a CC64 pedal interval sustains the note's release or body."""
+    if not pedals:
+        return False
+    end = start + dur
+    for ps, pe in pedals:
+        if ps - 0.02 <= end <= pe + 0.05 or (ps - 0.02 <= start and pe >= end - 0.02):
+            return True
+    return False
+
+
+def summarize_track(track_data, beats_per_bar=4.0, file_name="", bpm=120.0):
+    """Build a complete musical summary dict with inline bends and pedal flags per note."""
     notes = track_data["notes"]
-    pedals = track_data["pedals"]
+    pedals = _dedupe_pedals(track_data["pedals"])
     pitch_bends = track_data.get("pitch_bends", [])
     vels = [n[3] for n in notes]
     keys = [n[2] for n in notes]
@@ -238,8 +331,15 @@ def summarize_track(track_data, beats_per_bar=4.0, file_name=""):
     grid_offsets = [abs(s - round(s / 0.25) * 0.25) for s, _, _, _, _ in notes]
     avg_grid_offset = round(sum(grid_offsets) / len(grid_offsets), 4) if grid_offsets else 0.0
 
-    detailed_notes = [
-        {
+    notes_with_bends = _attach_pitch_bends_to_notes(notes, pitch_bends, bpm) if (pitch_bends and not looks_like_drum) else notes
+
+    detailed_notes = []
+    bent_note_count = 0
+    for start, dur, key, vel, bend_spec in notes_with_bends:
+        bend_label = None if looks_like_drum else _summarize_note_bend(key, bend_spec)
+        if bend_label:
+            bent_note_count += 1
+        item = {
             "bar": int(start // beats_per_bar) + 1,
             "beat_in_bar": round((start % beats_per_bar) + 1.0, 4),
             "start_beat": round(start, 4),
@@ -248,8 +348,11 @@ def summarize_track(track_data, beats_per_bar=4.0, file_name=""):
             "note": DRUM_LABELS.get(key, key_to_name(key)) if looks_like_drum else key_to_name(key),
             "vel": int(vel),
         }
-        for start, dur, key, vel, _ in notes
-    ]
+        if not looks_like_drum and _is_note_pedaled(start, dur, pedals):
+            item["ped"] = True
+        if bend_label:
+            item["bend"] = bend_label
+        detailed_notes.append(item)
 
     detailed_pedals = [
         {
@@ -267,6 +370,7 @@ def summarize_track(track_data, beats_per_bar=4.0, file_name=""):
         "program_name": track_data["program_name"],
         "is_drum_hint": looks_like_drum,
         "note_count": len(notes),
+        "bent_note_count": bent_note_count,
         "velocity_range": (min(vels), max(vels)) if vels else (0, 0),
         "velocity_avg": vel_avg,
         "velocity_std": vel_std,

@@ -21,10 +21,15 @@ This file routes user requests to the specific reference files you need. **Read 
 | Scale-degree spelling, Roman numeral accidentals, altered-tension spelling | `../assets/scale-degree-spelling-cheatsheet.md` + `harmony/functional-harmony.md` |
 | Chord progressions, T-S-D function, cadences, diatonic motion | `harmony/functional-harmony.md` |
 | Voice leading, smooth movement, 4-part writing | `harmony/voice-leading.md` |
-| Secondary dominants, borrowed chords, Neapolitan, augmented 6ths | `harmony/chromatic-harmony.md` |
+| Chromaticism, secondary dominants, borrowed chords, Neapolitan, aug 6ths | `harmony/chromatic-harmony.md` |
 | Modulation, key changes | `harmony/modulation.md` |
 | Modal music, modal centers, characteristic notes | `harmony/modal-harmony.md` |
 | Jazz changes, ii-V-I, tritone subs, upper structures | `harmony/jazz-harmony.md` |
+| **Neo-Riemannian PLR/SLIDE/H, Tonnetz, Axis System (T/S/D) & Film CMCR Cadences** | `harmony/neo-riemannian-and-tonnetz.md` |
+| **Negative Harmony (CRT Z3xZ4) & George Russell's Lydian Chromatic Concept** | `harmony/negative-harmony-and-polarity.md` |
+| **Upper Structure Triads, Gospel Polychords, Barry Harris 6th-Dim, Drop/Quartal** | `harmony/advanced-jazz-gospel-voicings.md` |
+| **Advanced Harmony YAML Lookup Catalog** | `../assets/advanced-harmony-catalog.yaml` |
+| **Strict/Invertible Counterpoint, Fugue, PC-Sets, 12-Tone, Spectral & Schillinger** | `../../counterpoint-fugue-and-post-tonal/SKILL.md` |
 | Reharmonization, chord substitution | `harmony/reharmonization.md` |
 | Writing melodies, contour, climax, range | `melody/melodic-construction.md` |
 | Motifs, motivic development, transformation | `melody/motivic-development.md` |

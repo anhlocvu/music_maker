@@ -9,11 +9,11 @@
 | `engine/song.py` | `Song`, `Track`, step-string parser, pedal/strum/arpeggio, `exclusiveClass` choke, mixer + reverb, WAV/stems/MIDI/MPE/loop export |
 | `engine/midi_io.py` | `parse_midi_file`, `discover_midi_sources`, `load_midi_into_track` (notes + CC64 pedals) |
 | `engine/rpp.py` | `load_rpp(path)` reads a Reaper project into a Song |
-| `engine/harmony.py` | `parse(symbol)`, `chord_at(timeline, beat)`, `pitch_class`, `midi_to_name` |
-| `engine/voicing.py` | `voice_lead(...)` DP voice-leading with `LOW_INTERVAL_LIMITS` + `apply_voicings(...)` |
+| `engine/harmony.py` | `parse(symbol)` (incl. polychord `D\|C7`), `chord_at`, `pitch_class`, `midi_to_name`, `plr_transform`, `negative_harmony_pcs`, `coltrane_cycle`, `barry_harris_scale`, `upper_structure_triad` |
+| `engine/voicing.py` | `voice_lead(...)` DP voice-leading with `LOW_INTERVAL_LIMITS`, `apply_voicings(...)`, `drop2`, `drop3`, `drop24`, `quartal_stack`, `so_what_voicing`, `upper_structure_voicing` |
 | `engine/expression.py` | `humanize_track(...)` / `humanize_song(...)`, `expressive_bends(...)`, `make_bend_curve(...)`: timing/velocity humanization + phrasing-aware pitch bends |
 | `engine/patterns.py` | `list_patterns(...)`, `pattern_to_steps(...)` (729 classic drum patterns), `drum_stats_suggest(...)` (Groove MIDI stats) |
-| `engine/review.py` | `review_song(...)`, `symbolic_metrics(...)` & `format_review(...)`: detects mud, rubs, parallels, static loops, plus GTR-CTRL `PCE`/`GC`/`PIP`/`UIP` |
+| `engine/review.py` | `review_song(...)`, `symbolic_metrics(...)` & `format_review(...)`: detects `low_intervals`, `register_clumps`, `vertical_rubs`, `outside_chord`, `out_of_scale_bends`, `parallels`, `static_loops`, plus GTR-CTRL `PCE`/`GC`/`PIP`/`UIP` |
 | `engine/analysis.py` | `analyze_wav(...)` & `analyze_song_mix(...)`: K-weighted LUFS, 6-band balance, spectral slope vs `tonal-references.json`, stem check |
 | `render.py` | `python render.py [song ...]`; exports mix WAV, MIDI, and `out/<song>/multi_track/*.wav` stems |
 | `review_song.py` | `python review_song.py <song>` runs score-level diagnostics before/after rendering |
@@ -86,8 +86,8 @@ t.pedal_steps(step=4.0, lift=0.05) # tự động đạp/nhả lại mỗi 4 bea
 ```python
 from engine import expression
 
-# 1. Preset bends (bend_release, delayed_bend, pre_bend, scoop, dive, bend_vibrato, glide)
-t.bend("G5", beats=2.0, style="bend_release", semis=2.0, vel=94)
+# 1. Target-locked preset bends (compute exact semitones from target note automatically)
+t.bend("G5", beats=2.0, style="bend_release", target="A5", vel=94)  # G5 -> A5 (+2.0 st)
 t.bend("F2", beats=2.0, style="delayed_bend", semis=2.0, vel=88)   # bass hold -> bend +2st -> release
 t.bend("C5", beats=1.5, style="dive", semis=1.5, vel=90)           # dive down -1.5st -> return
 t.bend("A5", beats=3.0, style="bend_vibrato", semis=0.75, vibrato_waves=3)
@@ -96,11 +96,20 @@ t.bend("A5", beats=3.0, style="bend_vibrato", semis=0.75, vibrato_waves=3)
 t.bend("D5", beats=2.0, unit="beats",
        curve=[(0.0, 0.0), (0.3, 2.0), (0.9, 2.0), (1.4, 0.0), (1.8, -1.0), (2.0, 0.0)])
 
-# 3. Attach bend to the last added note(s), or auto-enrich sustained/peak notes
-t.seq("G5 - - -", step=0.5).bend_last(style="bend_release", semis=2.0)
-expression.expressive_bends(t, role="guitar", seed=42, max_semi=2.0, min_dur=0.75)
+# 3. Attach bend to the last added note(s), or auto-enrich with scale/harmony constraints
+t.seq("G5 - - -", step=0.5).bend_last(style="bend_release", target="A5")
+harmony = [(0.0, "Am"), (4.0, "F")]
+expression.expressive_bends(
+    t,
+    role="guitar",
+    scale="A minor",          # or key="Am"; filters bend targets to scale/chord tones
+    harmony=harmony,          # optional [(beat, symbol), ...] chord timeline
+    seed=42,
+    max_semi=2.0,
+    min_dur=0.75,
+)
 ```
-Note: `export_midi()` automatically emits **RPN `0,0` (Pitch Bend Sensitivity)** when bends exceed `±2` semitones, and `load_midi_into_track()` imports both CC64 pedals and pitch-bend curves.
+Note: `export_midi()` automatically emits **RPN `0,0` (Pitch Bend Sensitivity)** when bends exceed `±2` semitones, and `load_midi_into_track()` imports both CC64 pedals and pitch-bend curves. Use `review_song(..., scale="C minor")` (or `python review_song.py <song_name> --scale "C minor"`) to inspect `out_of_scale_bends`. Also, `analyze_midi.py` / `generate_midi_map.py` render each project's `readme.md` first and embed `ped` and `bend=...` inline directly on each note.
 
 ## Output
 - `song.render("out/x.wav")` -> normalized array (and WAV if a path is given).
@@ -109,3 +118,31 @@ Note: `export_midi()` automatically emits **RPN `0,0` (Pitch Bend Sensitivity)**
 - `song.render_loop(start_beat, end_beat, "out/x")` -> `_intro`, `_loop`, `_looped` (smpl chunk).
 - Verify with numpy: duration, rms/peak per second, per-track first/last beat,
   loop seam jump `abs(loop[0]-loop[-1])` vs typical sample steps.
+
+## Advanced Harmony, Voicings & Register Diagnostics (`v1.5.0`)
+```python
+from engine import harmony, voicing, review
+
+# 1. Polychord syntax & extended jazz/altered chord parsing
+ch = harmony.parse("D|C7")                 # upper_pcs (D maj) + lower_pcs (C7)
+alt = harmony.parse("G7#9#11")             # also: 7alt, 7b9b13, 13#11, 13b9, maj9#11, mMaj9, 6/9#11, m11b5, sowhat
+
+# 2. Neo-Riemannian, Negative Harmony (CRT), Coltrane & Barry Harris
+pc, qual = harmony.plr_transform(0, "maj", ops="PLP")             # Hexatonic Pole -> Abm (8, "min")
+neg = harmony.negative_harmony_pcs({7, 11, 2, 5}, tonic="C")      # G7 -> {0, 8, 5, 2} (Dm7b5/Fm6)
+col = harmony.coltrane_cycle("B", direction=-1)                   # ['Bmaj7', 'D7', 'Gmaj7', 'Bb7', 'Ebmaj7', 'F#7']
+bh  = harmony.barry_harris_scale("C", mode="major")               # scale_pcs, tonic_sixth_pcs, diminished_pcs
+us  = harmony.upper_structure_triad("C", "bVI", "maj", shell="37")# Ab triad over E-Bb shell
+
+# 3. Drop-2 / Drop-3 / Drop-2+4 / Quartal / So What / Upper-Structure Voicings
+d2  = voicing.drop2([60, 64, 67, 71])                             # [55, 60, 64, 71]
+d3  = voicing.drop3([60, 64, 67, 71])                             # [52, 60, 67, 71]
+d24 = voicing.drop24([60, 64, 67, 71])                            # [48, 55, 64, 71]
+q4  = voicing.quartal_stack(48, voices=4)                         # [48, 53, 58, 63]
+sw  = voicing.so_what_voicing(50, low=50)                         # [50, 55, 60, 65, 69] (Dm11)
+usv = voicing.upper_structure_voicing("C", "II", "maj")           # {'shell': [48, 52, 58], 'upper': [...], 'all': [...]}
+
+# 4. Same-family low-mid register crowding (< C4, 1-2 st apart) & out-of-scale bend review
+report = review.review_song(song, scale="C major")
+print(report["register_clumps"], report["low_intervals"], report["out_of_scale_bends"])
+```

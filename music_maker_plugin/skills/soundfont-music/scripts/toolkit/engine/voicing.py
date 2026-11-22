@@ -4,6 +4,7 @@ import warnings
 
 import numpy as np
 
+from . import harmony as harm
 from .harmony import QUALITIES, parse
 
 # Robin Hoffmann low interval limits (lowest MIDI pitch per semitone span).
@@ -24,12 +25,19 @@ def _rubs(a, b):
     return abs(a - b) in (1, 13)
 
 
+def _chord_intervals(parsed):
+    """Return chord intervals relative to root, supporting both QUALITIES keys and polychords."""
+    if parsed["quality"] in QUALITIES:
+        return QUALITIES[parsed["quality"]]
+    return [0] + sorted((p - parsed["root"]) % 12 for p in parsed["pcs"] if (p - parsed["root"]) % 12 != 0)
+
+
 def chord_tones(symbol, voices, rotation=0, omit=0, exclude=(), keep_root=False):
     """Select `voices` pitch classes for `symbol` following standard arranging omission order."""
     c = parse(symbol)
     if c is None:
         raise ValueError(f"Unknown chord symbol: {symbol}")
-    iv = [i for i in dict.fromkeys(QUALITIES[c["quality"]]) if (c["root"] + i) % 12 not in exclude]
+    iv = [i for i in dict.fromkeys(_chord_intervals(c)) if (c["root"] + i) % 12 not in exclude]
     third = any(i in iv for i in (3, 4))
     colour = any(i in iv for i in (9, 10, 11))
     major_seventh = 11 in iv
@@ -126,7 +134,8 @@ def voice_lead(
         places = {pc: [p for p in range(low, top + 1) if p % 12 == pc] for pc in tones}
         blocked = {pc for pc in tones if places[pc] and all(any(_rubs(p, a) for a in others) for p in places[pc])}
         c0 = parse(symbol)
-        thirds = {(c0["root"] + i) % 12 for i in (3, 4, 5) if i in QUALITIES[c0["quality"]]}
+        c0_ivs = _chord_intervals(c0)
+        thirds = {(c0["root"] + i) % 12 for i in (3, 4, 5) if i in c0_ivs}
         if blocked and not blocked & thirds and len(tones - blocked) >= 2:
             for r in range(voices):
                 pcs = chord_tones(symbol, voices, r, 0, exclude=blocked - ({c0["root"]} if root else set()), keep_root=root)
@@ -193,3 +202,65 @@ def apply_voicings(track, voicings, beats=4.0, at=None, vel=85, strum=0.0, pedal
             track.pedal(pos, pos + dur - lift)
         pos += dur
     return track
+
+
+def _drop_voices(notes, indices_from_top):
+    """Drop specified 1-based positions from top down one octave and return sorted MIDI notes."""
+    ordered = sorted(int(n) for n in notes)
+    n = len(ordered)
+    for k in indices_from_top:
+        if 1 <= k <= n:
+            ordered[n - k] -= 12
+    return sorted(ordered)
+
+
+def drop2(notes):
+    """Drop the 2nd highest voice of a close-position chord down an octave."""
+    return _drop_voices(notes, (2,))
+
+
+def drop3(notes):
+    """Drop the 3rd highest voice of a close-position chord down an octave."""
+    return _drop_voices(notes, (3,))
+
+
+def drop24(notes):
+    """Drop the 2nd and 4th highest voices of a close-position chord down an octave."""
+    return _drop_voices(notes, (2, 4))
+
+
+def quartal_stack(root, voices=4, step_intervals=None, low=48):
+    """Build a stack of fourths (or custom intervals) starting at or above `low`."""
+    if step_intervals is None and voices <= 0:
+        return []
+    pc = harm._to_pc(root)
+    start = low + ((pc - low) % 12)
+    ivs = step_intervals if step_intervals is not None else (5,) * max(0, voices - 1)
+    out = [start]
+    for iv in ivs:
+        out.append(out[-1] + int(iv))
+    return out
+
+
+def so_what_voicing(root, low=48):
+    """Build a 5-note 'So What' chord (three P4s + top M3)."""
+    return quartal_stack(root, voices=5, step_intervals=(5, 5, 5, 4), low=low)
+
+
+def upper_structure_voicing(
+    root="C", us_degree="II", triad_quality="maj", shell="37", bass_octave=3, upper_octave=4, include_root=True
+):
+    """Arrange an upper-structure triad cleanly above a root + 3rd/7th guide-tone shell."""
+    us = harm.upper_structure_triad(root, us_degree=us_degree, triad_quality=triad_quality, shell=shell)
+    r = us["root"]
+    bass_midi = (bass_octave + 1) * 12 + r
+    shell_notes = [bass_midi] if include_root else []
+    for spc in sorted(us["shell_pcs"], key=lambda p: (p - r) % 12):
+        shell_notes.append(bass_midi + ((spc - r) % 12))
+    shell_notes.sort()
+    min_upper = max(max(shell_notes) + 3, (upper_octave + 1) * 12)
+    u_root = us["upper_root"]
+    u_base = min_upper + ((u_root - min_upper) % 12)
+    triad_ivs = harm._TRIAD_IVS[triad_quality]
+    upper_notes = [u_base + iv for iv in triad_ivs]
+    return {"shell": shell_notes, "upper": upper_notes, "all": shell_notes + upper_notes}

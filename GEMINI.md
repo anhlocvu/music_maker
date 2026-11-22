@@ -313,3 +313,82 @@ Kích hoạt `llm-prompt-optimizer`, trích xuất toàn bộ 5 PDF + tài liệ
 - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 9 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
 - Kiểm tra `pyyaml` đối với `chord-scale-and-cell-catalog.yaml`: **OK** (7 root keys).
 - `uv run --with numpy --with scipy --with mido python -B -m unittest discover -s tools/tests -v`: **12/12 tests OK**.
+
+---
+
+## Phiên làm việc: 2026-11-22 (Phần 3) — Khóa mục tiêu Pitch Bend, Inline `midi_map.md` & Quy tắc Ưu tiên Phong cách
+
+### Mục tiêu
+1. Giải quyết lỗi AI bend lung tung thiếu ý đồ nốt đích bằng tài liệu nghiên cứu web đã trích xuất sang text (`tai lieu/pitch_bending/*.md`) và đóng góp vào các skill hiện có + nâng cấp toolkit Python.
+2. Nâng cấp định dạng `midi_map.md`: đưa `### Project README` lên đầu mỗi project, khử trùng lặp/rác dump CC64 & Pitch Bend riêng, nhúng trực tiếp `ped` và `bend=...[Target]` inline trên từng nốt (không tự phân loại style vì `readme.md` đã ghi rõ).
+3. Gỡ bỏ các rào cản khiến AI bỏ qua phong cách từ `midi_map.md` khi làm project ballad (đặc biệt độ dài dòng cũ >151 KB gây cắt đọc, cộng với việc `genre-style-encyclopedia` / `style-maps.md` / `producer-mindset-workflow` áp đặt mặc định textbook).
+
+### Những thay đổi đã thực hiện
+
+1. **Nghiên cứu & Chưng cất tài liệu Pitch Bend (`tai lieu/pitch_bending/`)**:
+   - Tải và trích xuất 4 bài báo arXiv sang Markdown (`arxiv_2308_12307_modeling_bends.md`, `arxiv_2401_13498_expressive_guitar.md`, `arxiv_1910_09021_erhu_techniques.md`, `arxiv_0906_0127_intonation_fretted.md`).
+   - Viết `music_maker_plugin/skills/guitar-bass-expression/references/pitch-bend-target-grammar.md` theo chuẩn `llm-prompt-optimizer` (khóa `start -> target`, 4 trạng thái `∅/↑/→/↓` từ mô hình Steve Vai & thống kê 932 track của D'Hooge et al. 2023, bảng bậc âm cho Blues/Pentatonic/Major-Ballad, bend đồng âm/oblique/pre-bend, slide đơn âm cho dây/erhu/bass/synth, ví dụ Few-Shot inline `midi_map.md` và API thực tế của toolkit).
+
+2. **Nâng cấp Toolkit Python & `midi_map.md`**:
+   - `engine/harmony.py`: Thêm `SCALE_INTERVALS`, `parse_scale()`, `infer_scale_pcs()`.
+   - `engine/song.py`: Thêm `target=` cho `Track.bend()` và `Track.bend_last()` (hỗ trợ cả `int`/`np.integer`/tên nốt và chặn nhầm hướng `scoop`/`dive` có `target` cao hơn nốt gốc).
+   - `engine/expression.py`: Nâng cấp `expressive_bends(..., key=None, scale=None, harmony=None)` ràng buộc đích bend theo âm giai/hợp âm (đã xử lý cả `role="strings"` `scoop` và tách `key` + `scale`).
+   - `engine/review.py` & `review_song.py`: Thêm `--scale` / `scale=` và báo cáo `out_of_scale_bends` (ngưỡng `>= 0.8 st`).
+   - `engine/midi_io.py`, `analyze_midi.py` & `tools/generate_midi_map.py`: Đưa `### Project README` lên đầu block dự án, gỡ hoàn toàn dump `All Pitch Bend Events` và `All Pedal CC64 Events`, thêm `_dedupe_pedals()`, `_summarize_note_bend()` (xử lý chuẩn cả bend khởi trễ sau `0.02s`), `_is_note_pedaled()`, xuất `ped` và `bend=...[Target]` inline ngay trên từng nốt.
+   - Tái tạo `music_maker_plugin/midi_map.md`: **830 dòng**, dòng dài nhất chỉ còn **1.540 bytes** (thay vì >151 KB bị cắt đọc trước đây), 0 lỗi `[C3->C3]`.
+
+3. **Cập nhật Skills, Rules & Agents (`llm-prompt-optimizer`)**:
+   - Bổ sung giao thức khóa nốt đích và liên kết `pitch-bend-target-grammar.md` vào `guitar-bass-expression/SKILL.md`, `instrumental-soloing-improvisation/SKILL.md`, `music-theory-harmony/SKILL.md`, và `soundfont-music/references/toolkit.md`.
+   - Khẳng định quyền ưu tiên tuyệt đối (`midi_map.md` + `readme.md` ghi đè mặc định chung từ `genre-style-encyclopedia`) trong `music_maker_plugin/rules/AGENTS.md`, `soundfont-music/SKILL.md`, `producer-mindset-workflow/SKILL.md` (xóa nhãn `"No House Style"`), `genre-style-encyclopedia/{SKILL.md,references/style-maps.md}`, `orchestration-arrangement/SKILL.md`, `mixing-timbre-mastering/SKILL.md`, và `agents/{executive-producer,soundfont-mix-engineer}.md`.
+   - Cập nhật SpecKit: `specs/001-pitch-bend-and-midi-map-style/{spec.md,plan.md,tasks.md}`.
+
+4. **Rà soát & Sửa lỗi từ `code-reviewer`**:
+   - Khắc phục các lỗi HIGH/MEDIUM/LOW phát hiện được: sửa ví dụ sai `lead.play()` / `harmony=chord_track` / `review_song.py` trong tài liệu tham chiếu; sửa lỗi `expressive_bends()` ép `1.0 st` ở `role="strings"` gây lệch âm giai; sửa `_summarize_note_bend()` cho bend trễ sau onset; thêm bảo vệ mảng rỗng trong `_dedupe_pedals()`; hỗ trợ `np.integer` và kiểm hướng `scoop`/`dive` trong `Track.bend()`.
+
+### Kiểm thử sau cùng
+- `tools/tests/test_toolkit_bends.py` + `tools/tests/test_toolkit_specs.py`: **17/17 tests OK** (0.229s).
+- `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 9 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
+- Kiểm tra `Select-String`: **0 tham chiếu** `tai lieu/`, **0 khối** `All Pitch Bend Events`, **0 nhãn** `[C3->C3]` trong `midi_map.md`.
+
+---
+
+## Phiên làm việc: 2026-11-22 (Phần 4) — Chưng cất 107 Tài liệu Hòa âm Cực kỳ Nâng cao, Đối âm/Post-Tonal & Phối khí Dàn nhạc/Big Band (v1.5.0)
+
+### Mục tiêu
+Theo kế hoạch SpecKit `002-advanced-harmony-and-orchestration` (Phương án 1 đã được người dùng duyệt) kết hợp `llm-prompt-optimizer`:
+1. Chưng cất trung thực 100% (không bịa đặt, không để lộ đường dẫn nội bộ) toàn bộ **107 file `.txt` (trích xuất từ 53 PDF)** trong `tai lieu/` vào 3 trụ cột skill + toolkit Python theo chuẩn TDD.
+2. Bổ sung agent chuyên môn thứ 5 (`orchestral-bigband-arranger.md`) và nâng cấp toàn bộ 4 agent hiện có.
+3. Sau khi chưng cất đầy đủ, kiểm thử vượt `code-reviewer`, dọn sạch thư mục `tai lieu/`.
+
+### Những thay đổi đã thực hiện
+
+1. **Nâng cấp Python Toolkit (`soundfont-music/scripts/toolkit/engine/`) & TDD (`tools/tests/test_toolkit_advanced.py`)**:
+   - `harmony.py`: Bổ sung 12 hợp âm mở rộng/biến đổi (`7alt`, `7b9b13`, `7#9#11`, `13#11`, `13b9`, `7#5#9`, `maj9#11`, `mMaj9`, `mmaj9`, `6/9#11`, `m11b5`, `sowhat`), phân tích đa hợp âm `D|C7` (`upper_pcs` + `lower_pcs`), phép biến đổi Neo-Riemannian `plr_transform()` (`P/L/R/S/N/H`), đối xứng âm tính CRT `negative_harmony_pcs()`, chu kỳ `coltrane_cycle()`, hệ thang âm `barry_harris_scale()`, và `upper_structure_triad()`.
+   - `voicing.py`: Hỗ trợ đa hợp âm trong `chord_tones()`/`voice_lead()`, bổ sung `drop2()`, `drop3()`, `drop24()`, `quartal_stack()`, `so_what_voicing()`, và `upper_structure_voicing()`.
+   - `review.py`: Thêm chẩn đoán `register_clumps` (phát hiện chen chúc 1–2 nửa cung cùng họ nhạc cụ dưới `C4`, tách đúng GM `46` harp / `47` timpani ra khỏi `"strings"` và bao gồm String Ensemble `48–51`).
+
+2. **Nâng cấp `music-theory-harmony/`**:
+   - Thêm `references/harmony/neo-riemannian-and-tonnetz.md` (PLR/Coxeter $\tilde{S}_3$/Golden Tonnetz/Tarnhelms vs Ids, Hệ trục `T/S/D` Lendvai/Bartók, hệ thống kết phim Lehman Mixed Plagal / Subtonic / `CMCR Types 0/I/III/IV/VI`), `negative-harmony-and-polarity.md` (CRT $\mathbb{Z}_3 \times \mathbb{Z}_4$, bản đồ trục cực & Lydian Chromatic Concept 7 thang âm thành viên của George Russell), `advanced-jazz-gospel-voicings.md` (Upper Structure Triads Jason Lyon, Gospel Polychords `bVIImaj7/R` & `IIImaj7b5/R`, Barry Harris 6th-Diminished 12 giọng, Coltrane M3/m3 & Drop/Quartal), và `assets/advanced-harmony-catalog.yaml`.
+
+3. **Tạo Skill mới `counterpoint-fugue-and-post-tonal/`**:
+   - `SKILL.md` & `references/00-navigation.md`
+   - `references/strict-and-invertible-counterpoint.md` (Species 1–5 Jeppesen vs Schoenberg, đối âm tâm lý Belkin, bảng đảo quãng Đối âm kép quãng 8/10/12 và đối âm 3–4 bè của Prout).
+   - `references/fugue-and-canon-architecture.md` (Subject, quy luật biến điệu Real vs Tonal Answer, Countersubject, Exposition, Episode, Stretto/Inversion/Augmentation, Double/Triple Fugue, Canon, Goetschius Homophonic & Larger Forms).
+   - `references/post-tonal-set-and-serial-theory.md` (Prime Form Forte vs Rahn, Tone Clock Absil/Schat, đếm tổ hợp Hook Pólya 29 tetrachord / 224 set class, Tứ diện Cohn đỉnh `[0123]/[0167]/*0167*/[0127]`, Straus Total Voice Leading `IFUNC`/`imultiset` `<Tn>`/`<In>` & Multiple Parentage, chu kỳ 48 dạng hàng 12 âm & Segmental Invariance).
+   - `references/spectral-and-schillinger-techniques.md` (Giai điệu Spectral Differential/Liminal/Transitory của Grisey/Vivier/Haas & độ lệch cents bồi âm 3–13, nhịp giao thoa chu kỳ Schillinger `a ÷ b -> r(a:b)`, Fractioning, 3 generators & tốc độ biến thiên).
+   - `assets/post-tonal-and-fugue-catalog.yaml`.
+
+4. **Nâng cấp `orchestration-arrangement/`**:
+   - Thêm `references/orchestration/classical-masters-orchestration.md` (7 Texture Types của Piston, Overlaying/Crossing/Enclosure của Rimsky-Korsakov, cân bằng số lượng, vật lý vĩ & tầm âm/vùng yếu từ Berlioz/Strauss/Forsyth/Widor/Prout/Absil).
+   - Thêm `references/orchestration/timbre-grouping-and-modern-scoring.md` (ACTOR/McAdams TOGE Concurrent/Sequential/Segmental, Belkin Planes, thực chiến chấm bài phòng thu & pops của Tim Davies).
+   - Thêm `references/orchestration/big-band-and-sectional-voicings.md` (Biên chế 17 cây, 4-Way Close, khử cấn `m2`, 5 phương pháp hòa âm Approach Note, Drop-2/2+4, Cascades, Spread Pads, Dissonance Arc, quy tắc `D3` của Evan Rogers & Swing/Latin Clave).
+
+5. **Đồng bộ Hệ sinh thái, Sửa lỗi `code-reviewer` & Dọn dẹp**:
+   - Tạo agent thứ 5 `agents/orchestral-bigband-arranger.md`; nâng cấp `composer-theorist.md`, `groove-arranger.md`, `executive-producer.md`, `soundfont-mix-engineer.md`, `agents/README.md`, `rules/AGENTS.md`, `soundfont-music/{SKILL.md,references/toolkit.md}`, `plugin.json` (`1.5.0`), `THIRD_PARTY.md`, và `README.md`.
+   - Khắc phục toàn bộ góp ý HIGH/MEDIUM/LOW từ `code-reviewer`: xử lý polychord trong `voicing.chord_tones()`, sửa kiểm tra mode `"major"`/`"maj"`/`"M"` trong `plr_transform()` & `barry_harris_scale()`, đồng bộ key `usv["shell"]` & 6 hợp âm `coltrane_cycle()` trong tài liệu, sửa map GM `46/47` (harp/timpani) khỏi `"strings"`, xóa 2 dòng ghi chú nháp LLM, chỉnh chính xác bảng CMCR Lehman, phép soi âm tính `Fmaj7 -> Ebmaj7`, quy tắc Forte/Rahn & đỉnh tứ diện Cohn `[0127]`.
+   - Xóa toàn bộ tài liệu tạm trong `tai lieu/` sau khi toàn bộ kiến thức đã nạp và kiểm thử đạt chuẩn.
+
+### Kiểm thử sau cùng
+- `uv run --with numpy --with scipy --with mido python -B -m unittest discover -s tools/tests -v`: **24/24 tests OK**.
+- `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 10 · agents 5 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
+- Kiểm tra rò rỉ `tai lieu/`, `py_compile`, JSON `plugin.json` và YAML (`advanced-harmony-catalog.yaml`, `post-tonal-and-fugue-catalog.yaml`): **OK (0 lỗi, 0 rò rỉ)**.

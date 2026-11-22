@@ -13,7 +13,8 @@ TOOLKIT_DIR = os.path.join(
 if TOOLKIT_DIR not in sys.path:
     sys.path.insert(0, TOOLKIT_DIR)
 
-from engine import sf2, song as song_mod, midi_io, expression  # noqa: E402
+from engine import sf2, song as song_mod, midi_io, expression, review  # noqa: E402
+import analyze_midi  # noqa: E402
 
 
 class TestPitchCurveAndBends(unittest.TestCase):
@@ -125,6 +126,92 @@ class TestPitchCurveAndBends(unittest.TestCase):
         self.assertEqual(tr.events[0][4], first_custom)
         # Sustained G5 (dur=2.0) should receive a bend curve
         self.assertIsNotNone(tr.events[-1][4])
+
+    def test_analyze_midi_inlines_bends_and_puts_readme_first(self):
+        s = song_mod.Song("InlineMapTest", bpm=68)
+        tr = s.track("lead", "osc_sine")
+        tr.bend("G4", beats=2.0, style="bend_release", semis=2.0, vel=95)
+        tr.note("C5", beats=2.0, vel=88)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            proj_dir = os.path.join(tmp, "ballad_proj")
+            os.makedirs(proj_dir, exist_ok=True)
+            with open(os.path.join(proj_dir, "readme.md"), "w", encoding="utf-8") as fh:
+                fh.write("Custom melancholic ballad style, 68 BPM.")
+            s.export_midi(os.path.join(proj_dir, "guitar_lead.mid"))
+
+            report = analyze_midi.analyze_directory(tmp)
+            md = analyze_midi.format_markdown(tmp, report)
+
+            self.assertNotIn("All Pitch Bend Events", md)
+            self.assertIn("### Project README", md)
+            self.assertLess(md.index("### Project README"), md.index("### File:"))
+            self.assertIn("G4(", md)
+            self.assertIn("bend=", md)
+            self.assertIn("A4", md)
+
+    def test_track_bend_and_bend_last_with_target_note(self):
+        s = song_mod.Song("TargetBend", bpm=100)
+        tr = s.track("lead", "osc_sine")
+        tr.bend("D5", beats=2.0, style="bend_release", target="E5", vel=92)
+        tr.seq("G4 - - -", step=0.5).bend_last(style="bend_hold", target="A4")
+        tr.bend("E5", beats=1.5, style="dive", target="D5")
+
+        self.assertEqual(len(tr.events), 3)
+        peaks_0 = [pt[1] for pt in tr.events[0][4][2]]
+        peaks_1 = [pt[1] for pt in tr.events[1][4][2]]
+        peaks_2 = [pt[1] for pt in tr.events[2][4][2]]
+        self.assertAlmostEqual(max(peaks_0), 2.0, places=3)
+        self.assertAlmostEqual(max(peaks_1), 2.0, places=3)
+        self.assertAlmostEqual(min(peaks_2), -2.0, places=3)
+
+        import numpy as np
+        tr.bend("D5", beats=1.0, style="bend_release", target=np.int64(76))
+        self.assertAlmostEqual(max(pt[1] for pt in tr.events[-1][4][2]), 2.0, places=3)
+        with self.assertRaises(ValueError):
+            tr.bend("D5", beats=1.0, style="scoop", target="E5")
+
+    def test_expressive_bends_respects_scale_and_harmony(self):
+        c_major_pcs = {0, 2, 4, 5, 7, 9, 11}
+        for role in ("guitar", "strings"):
+            s = song_mod.Song(f"ScaleAware-{role}", bpm=90)
+            tr = s.track(role, "osc_sine")
+            # In C major: E5 +2st -> F#5 (invalid), B4 +2st -> C#5 (invalid), E5 -1st scoop -> Eb5 (invalid!)
+            tr.seq("C5 - - - | E5 - - - | B4 - - - | G5 - - - |", step=0.5)
+            expression.expressive_bends(
+                tr, role=role, seed=0, max_semi=2.0, min_dur=0.75, intensity=1.0, key="C", scale="major"
+            )
+            for _start, _dur, key, _vel, bend in tr.events:
+                if not bend:
+                    continue
+                pts = bend[2]
+                for val in (max(pt[1] for pt in pts), min(pt[1] for pt in pts)):
+                    if abs(val) >= 0.8:
+                        target_pc = (key + int(round(val))) % 12
+                        self.assertIn(
+                            target_pc,
+                            c_major_pcs,
+                            f"Out-of-scale bend ({role}) from {key} by {val:+}st landed on pc {target_pc}",
+                        )
+
+    def test_review_song_flags_out_of_scale_bends(self):
+        s = song_mod.Song("AuditBend", bpm=90)
+        tr = s.track("lead", "osc_sine")
+        # Valid C major bend: D5 -> E5 (+2st), invalid bend: E5 -> F#5 (+2st), vibrato <=0.75st ignored
+        tr.seq("D5^E5 - - - | E5^F#5 - - - |", step=0.5)
+        tr.bend("A4", beats=2.0, style="bend_vibrato", semis=0.75, vibrato_waves=3)
+        rep = review.review_song(s, harmony=[(0.0, "C")], scale="C major")
+        self.assertIn("out_of_scale_bends", rep)
+        self.assertEqual(len(rep["out_of_scale_bends"]), 1)
+        self.assertIn("out_of_scale_bends", review.format_review(rep))
+
+    def test_summarize_note_bend_delayed_and_dedupe_pedals_edge_cases(self):
+        # Delayed-onset pitchwheel (t > 0.02s) started at 0st, peaked at +2st (D3)
+        lbl = midi_io._summarize_note_bend(48, ("points", True, ((0.104, 0.381), (0.30, 2.0), (0.60, 0.0))))
+        self.assertIsNotNone(lbl)
+        self.assertIn("D3", lbl)
+        self.assertNotIn("C3->C3", lbl)
+        self.assertEqual(midi_io._dedupe_pedals([(1.0, 1.0), (2.0, 1.5)]), [])
 
 
 if __name__ == "__main__":

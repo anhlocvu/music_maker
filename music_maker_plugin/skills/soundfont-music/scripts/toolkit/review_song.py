@@ -17,11 +17,13 @@ def main(argv):
     p = argparse.ArgumentParser(description="Score-level diagnostics and GTR-CTRL symbolic metrics")
     p.add_argument("song_name", help="Song module name inside songs/")
     p.add_argument("--prompted", default=None, help="Comma-separated list of prompted track names for PIP/UIP")
+    p.add_argument("--scale", default=None, help="Optional song scale (e.g. 'C major', 'A minor') for bend audit")
     args = p.parse_args(argv)
     mod = importlib.import_module(f"songs.{args.song_name}")
     harmony = getattr(mod, "harmony", None)
+    scale = args.scale or getattr(mod, "scale", None)
     prompted = [s.strip() for s in args.prompted.split(",") if s.strip()] if args.prompted else None
-    rep = review_song(mod.song, harmony=harmony, prompted_tracks=prompted)
+    rep = review_song(mod.song, harmony=harmony, prompted_tracks=prompted, scale=scale)
     print(format_review(rep))
 
 

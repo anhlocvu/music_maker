@@ -10,6 +10,7 @@ import math
 import numpy as np
 
 from .sf2 import build_bend_curve as make_bend_curve
+from . import harmony as harm
 
 ROLE_DEFAULTS = {
     "melody": {"timing_sd": 6.0, "short_sd": 2.0, "vel_pct": 3.0, "high_loud": 0.3, "arch": 6.0, "spread": 0.0, "lead": 0.0, "gate_sd": 0.02},
@@ -149,10 +150,25 @@ _ROLE_BEND_STYLES = {
 }
 
 
-def expressive_bends(track, role="lead", seed=1, max_semi=2.0, min_dur=0.75, intensity=0.7):
-    """Enrich sustained or phrase-peak notes on `track` with natural pitch-bend curves.
+def _valid_bend_offsets(key, allowed_pcs, cap, direction=1):
+    """Return integer semitone steps (1, 2, 3 within `cap`) landing inside `allowed_pcs`."""
+    max_step = int(math.floor(cap + 1e-6))
+    if not allowed_pcs:
+        return [float(s) for s in (2, 1) if s <= max_step]
+    valid = []
+    for step in range(1, min(3, max_step) + 1):
+        target_pc = (int(key) + direction * step) % 12
+        if target_pc in allowed_pcs:
+            valid.append(float(step))
+    return valid
 
-    Never overwrites notes that already have an explicit `bend`. Returns a summary dict.
+
+def expressive_bends(track, role="lead", seed=1, max_semi=2.0, min_dur=0.75, intensity=0.7,
+                     key=None, scale=None, harmony=None):
+    """Enrich sustained or phrase-peak notes on `track` with target-aware pitch-bend curves.
+
+    Validates upward/downward bend targets against `scale`, `key`, `harmony`, or an
+    inferred diatonic scale so bends never land out of key. Never overwrites existing bends.
     """
     if not track.events:
         return {"notes": 0, "bends_added": 0}
@@ -163,36 +179,64 @@ def expressive_bends(track, role="lead", seed=1, max_semi=2.0, min_dur=0.75, int
     prob = max(0.0, min(1.0, float(intensity)))
     indexed = sorted(enumerate(track.events), key=lambda item: (item[1][0], item[1][2]))
 
+    scale_pcs = (
+        (harm.parse_scale(scale) if scale else None)
+        or (harm.parse_scale(f"{key} {scale}") if (key and scale) else None)
+        or harm.parse_scale(key)
+    )
+    if scale_pcs is None and not harmony:
+        scale_pcs = harm.infer_scale_pcs(track.events)
+    sorted_h = sorted(harmony, key=lambda x: x[0]) if harmony else None
+
     new_events = list(track.events)
     added = 0
-    for pos_idx, (orig_idx, (start, dur, key, vel, bend)) in enumerate(indexed):
+    for pos_idx, (orig_idx, (start, dur, note_key, vel, bend)) in enumerate(indexed):
         if bend is not None:
             continue
-        prev_key = indexed[pos_idx - 1][1][2] if pos_idx > 0 else key
-        next_key = indexed[pos_idx + 1][1][2] if pos_idx + 1 < len(indexed) else key
-        is_peak = key > prev_key and key >= next_key
+        prev_key = indexed[pos_idx - 1][1][2] if pos_idx > 0 else note_key
+        next_key = indexed[pos_idx + 1][1][2] if pos_idx + 1 < len(indexed) else note_key
+        is_peak = note_key > prev_key and note_key >= next_key
         effective_min = min_dur * (0.65 if is_peak else 1.0)
         if dur < effective_min:
             continue
         if float(rng.random()) > (0.95 if is_peak and dur >= min_dur else prob):
             continue
 
+        ch = harm.chord_at(sorted_h, start) if sorted_h else None
+        allowed_pcs = set(scale_pcs) if scale_pcs else set()
+        if ch:
+            allowed_pcs |= ch["pcs"]
+        if not allowed_pcs:
+            allowed_pcs = None
+
         style = styles[int(rng.integers(0, len(styles)))]
-        if style == "bend_vibrato":
-            semis = round(min(cap, 0.35 + 0.35 * float(rng.random())), 2)
-            waves = 3 if dur >= 1.5 else 2
+        up_opts = _valid_bend_offsets(note_key, allowed_pcs, cap, direction=1)
+        down_opts = _valid_bend_offsets(note_key, allowed_pcs, cap, direction=-1)
+
+        waves = 3 if dur >= 1.5 else 2
+        if style in ("bend_release", "delayed_bend"):
+            if up_opts:
+                prefer_two = dur >= 1.5 and is_peak and 2.0 in up_opts
+                semis = 2.0 if prefer_two else (max(up_opts) if dur >= 1.5 and len(up_opts) > 1 and role != "bass" else min(up_opts))
+            else:
+                style = "bend_vibrato"
+                semis = round(min(cap, 0.35 + 0.25 * float(rng.random())), 2)
         elif style == "scoop":
-            semis = round(min(cap, 0.5 if role == "strings" else 1.0), 2)
-            waves = 2
-        elif role == "bass":
-            semis = round(min(cap, 1.0 if dur < 2.0 else 2.0), 2)
-            waves = 2
-        else:
-            semis = round(min(cap, 2.0 if (dur >= 1.5 and is_peak) else 1.0), 2)
-            waves = 3
+            if down_opts:
+                semis = min(down_opts)
+            else:
+                semis = round(min(cap, 0.5), 2)
+        elif style == "dive":
+            if down_opts:
+                semis = 2.0 if (dur >= 1.5 and 2.0 in down_opts) else min(down_opts)
+            else:
+                style = "bend_vibrato"
+                semis = round(min(cap, 0.35 + 0.25 * float(rng.random())), 2)
+        else:  # bend_vibrato
+            semis = round(min(cap, 0.35 + 0.35 * float(rng.random())), 2)
 
         curve = make_bend_curve(style=style, semis=semis, smooth=True, vibrato_waves=waves)
-        new_events[orig_idx] = (start, dur, key, vel, curve)
+        new_events[orig_idx] = (start, dur, note_key, vel, curve)
         added += 1
 
     track.events = new_events

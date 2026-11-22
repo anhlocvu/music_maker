@@ -171,6 +171,14 @@ class Track:
             return base_nm, (cls._parse_bend_target(to, base_key), "glide")
         return nm, None
 
+    def _resolve_bend_semis(self, base_key, semis, target):
+        """Compute bend offset in semitones from explicit `semis` or `target` note."""
+        if target is not None:
+            is_int = isinstance(target, (int, np.integer)) and not isinstance(target, bool)
+            target_key = int(target) if is_int else note_number(str(target).strip())
+            return float(target_key - base_key)
+        return 2.0 if semis is None else float(semis)
+
     def _build_bend_spec(self, curve=None, style="bend_release", semis=2.0,
                          smooth=True, unit="norm", vibrato_waves=3):
         """Normalize an explicit curve or named preset into a hashable bend spec."""
@@ -193,22 +201,30 @@ class Track:
         self._cursor = pos + float(beats)
         return self
 
-    def bend(self, note, beats=1.0, curve=None, style="bend_release", semis=2.0,
-             at=None, vel=90, smooth=True, unit="norm", vibrato_waves=3):
-        """Add a note/chord with a rich multi-point or preset pitch-bend curve."""
+    def bend(self, note, beats=1.0, curve=None, style="bend_release", semis=None,
+             target=None, at=None, vel=90, smooth=True, unit="norm", vibrato_waves=3):
+        """Add a note/chord with a rich multi-point, preset, or target-note pitch-bend curve."""
+        keys = self._parse_chord_keys(note, 0)
+        resolved_semis = self._resolve_bend_semis(keys[-1], semis, target)
+        if target is not None and style in ("scoop", "dive") and resolved_semis > 0:
+            raise ValueError(f"style={style!r} bends downward; target={target!r} is above {note!r}")
         bend_spec = self._build_bend_spec(
-            curve=curve, style=style, semis=semis,
+            curve=curve, style=style, semis=resolved_semis,
             smooth=smooth, unit=unit, vibrato_waves=vibrato_waves,
         )
         return self.note(note, beats=beats, at=at, vel=vel, bend=bend_spec)
 
-    def bend_last(self, curve=None, style="bend_release", semis=2.0,
+    def bend_last(self, curve=None, style="bend_release", semis=None, target=None,
                   smooth=True, unit="norm", vibrato_waves=3):
         """Attach or replace the pitch-bend curve on the most recently added event(s)."""
         if not self.events:
             return self
+        last_key = self.events[-1][2] - self.transpose
+        resolved_semis = self._resolve_bend_semis(last_key, semis, target)
+        if target is not None and style in ("scoop", "dive") and resolved_semis > 0:
+            raise ValueError(f"style={style!r} bends downward; target={target!r} is above last note")
         bend_spec = self._build_bend_spec(
-            curve=curve, style=style, semis=semis,
+            curve=curve, style=style, semis=resolved_semis,
             smooth=smooth, unit=unit, vibrato_waves=vibrato_waves,
         )
         last_start = self.events[-1][0]

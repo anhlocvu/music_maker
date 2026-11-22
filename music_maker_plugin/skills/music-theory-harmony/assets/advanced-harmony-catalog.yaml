@@ -1,0 +1,93 @@
+# Grounded Advanced Harmony, Transformational, Jazz & Film Cadence Catalog
+
+neo_riemannian_operations:
+  primary_involutions:
+    P: {name: Parallel, common_tones: 2, motion: "3rd shifts +/-1 st", example_C: "C <-> Cm"}
+    L: {name: Leading-tone exchange, common_tones: 2, motion: "Major root -1 st / Minor 5th +1 st", example_C: "C <-> Em"}
+    R: {name: Relative, common_tones: 2, motion: "Major 5th +2 st / Minor root -2 st", example_C: "C <-> Am"}
+  compound_operations:
+    S: {name: SLIDE, formula: LPR, common_tones: 1, held_tone: "3rd (e.g. E/Eb)", example_C: "C <-> C#m / Cm <-> B"}
+    N: {name: Nebenverwandt, formula: RLP, common_tones: 1, motion: "Major->minor subdominant / Minor->major dominant", example_C: "C <-> Fm / Cm <-> G"}
+    H: {name: Hexatonic Pole, formula: PLP, common_tones: 0, voice_leading_semitones: 3, example_C: "C <-> Abm / Cm <-> E", affect: "Cohn uncanny paradox"}
+  cyclic_groups:
+    PL_hexatonic: {length: 6, scale_family: "014589 hexatonic", subtypes: ["LP from major (Id/bright)", "LP from minor (Tarnhelm/dark)"]}
+    RP_octatonic: {length: 8, scale_family: "0134679t octatonic", cadence_fingerprint: "bVII -> V (Subtonic Cowboy Half Cadence)"}
+    RL_diatonic_spiral: {length: 24, traversal: "All 24 major & minor triads via 5ths/3rds"}
+
+negative_harmony:
+  algebraic_space: "Z12 isomorphic to Z3 x Z4 (Chinese Remainder Theorem)"
+  involution_formula: "(2 * tonic_pc + 7 - pc) mod 12"
+  C_axis_pairs: [[0,7], [1,6], [2,5], [3,4], [8,11], [9,10]]
+  functional_mirrors_in_C:
+    "I (C)": "i (Cm)"
+    "V7 (G7)": "iiø7 / iv6 (Dm7b5 / Fm6)"
+    "ii7 (Dm7)": "v7 / bVII6 (Gm7 / Bb6)"
+    "IVmaj7 (Fmaj7)": "bIIImaj7 / Gm(b6) (Ebmaj7)"
+    "vi7 (Am7)": "i7 (Cm7)"
+
+bartok_lendvai_axis_system:
+  axes_in_C:
+    T_tonic: [C, Eb, F#, A]
+    S_subdominant: [F, Ab, B, D]
+    D_dominant: [G, Bb, Db, E]
+  progression_dynamics:
+    normal_progression: "T -> S -> D -> T (releases tension)"
+    retrogression: "T -> D -> S -> T (builds tension)"
+    pole_counterpole: "Tritone switch within axis e.g. C<->F#, G<->Db (neutral tension)"
+
+film_cadence_taxonomy:
+  categories:
+    mixed_plagal_cadence: {formula: "IV -> iv / iiø7 -> I", voice_leading: "6 -> b6 -> 5", affect: "Wistful/romantic finality"}
+    subtonic_half_cadence: {formula: "bVII -> V", nrt: "RP (from V/flat side)", affect: "Pastoral/heroic openness"}
+    subtonic_authentic_cadence: {formula: "bVII -> I (or bVII -> IV -> I)", affect: "Warm modal anthem closure"}
+  cmcr_types_lehman_mto:
+    Type_0: {shift_semitones: 0, example: "A -> Bb (Jurassic Park)", affect: "Key-preserving chromatic tonic return"}
+    Type_I: {shift_semitones_from_old_I: 4, resolution: "III (V -> down m3)", example: "Harry Potter (D -> B from implied G)", affect: "Radiant wonderment / expansive lift"}
+    Type_III: {shift_semitones_from_old_I: -1, resolution: "VII", example: "E.T. (D -> C#) & Jurassic Park (F# -> Bb)", affect: "Instantaneous otherworldly revelation"}
+    Type_IV: {shift_semitones_from_old_I: -3, resolution: "VI", example: "Jurassic Park (C -> D from implied F; plagal Ab -> C from Eb)", affect: "Triumphant awe & heroic arrival"}
+    Type_VI: {shift_semitones_from_old_I: 6, resolution: "#IV", affect: "Relaxational tritone displacement (rare)"}
+
+lydian_chromatic_concept:
+  order_of_tonal_gravity_from_L: [0, 7, 2, 9, 4, 11, 6, 8, 3, 10, 5, 1]
+  seven_principal_scales:
+    Lydian: [0, 2, 4, 6, 7, 9, 11]
+    Lydian_Augmented: [0, 2, 4, 6, 8, 9, 11]
+    Lydian_Diminished: [0, 2, 3, 6, 7, 9, 11]
+    Lydian_b7: [0, 2, 4, 6, 7, 9, 10]
+    Auxiliary_Augmented: [0, 2, 4, 6, 8, 10]
+    Auxiliary_Diminished: [0, 2, 3, 5, 6, 8, 9, 11]
+    Auxiliary_Diminished_Blues: [0, 1, 3, 4, 6, 7, 9, 10]
+
+upper_structure_triads:
+  shell: "Root (bass) + 3rd + 7th"
+  dominants_with_natural_13_7b9:
+    "US bIII (maj)": {tensions: ["#9", "5", "b7"], scale: "Half-Whole Dim / Altered"}
+    "US #IV (maj)": {tensions: ["#11", "b7", "b9"], scale: "Half-Whole Dim / Altered"}
+    "US VI (maj)": {tensions: ["13", "b9", "3"], scale: "Half-Whole Dim"}
+    "US bIIIm (min)": {tensions: ["#9", "#11", "b7"], scale: "Half-Whole Dim / Altered"}
+    "US #IVm (min)": {tensions: ["#11", "13", "b9"], scale: "Half-Whole Dim"}
+  altered_dominants_7alt:
+    "US #IV (maj)": {tensions: ["#11", "b7", "b9"], scale: "Altered / Half-Whole Dim"}
+    "US bVI (maj)": {tensions: ["b13", "1", "#9"], scale: "Altered (7th mode Melodic Minor)"}
+    "US #Im (min)": {tensions: ["b9", "3", "b13"], scale: "Altered"}
+    "US bIIIm (min)": {tensions: ["#9", "#11", "b7"], scale: "Altered / Half-Whole Dim"}
+  bright_dominant:
+    "US II (maj)": {tensions: ["9", "#11", "13"], scale: "Lydian Dominant (4th mode Melodic Minor)"}
+
+gospel_polychords:
+  "13sus4": "bVIImaj7 / R"
+  "13add9": "bVIImaj7b5 / R"
+  "7#9#5": "IIImaj7b5 / R"
+  "m7b5": "bIIIm / R"
+  "m11": "bVIImaj7 / R (over minor bass)"
+
+barry_harris_major_6th_diminished:
+  scale_formula_semitones: [0, 2, 4, 5, 7, 8, 9, 11]
+  alternating_chords: ["I6 (0,4,7,9)", "vii°7 (11,2,5,8)"]
+
+coltrane_cycles:
+  giant_steps_m3_descent:
+    axis_steps_semitones: [0, -4, -8]
+    chord_cadence: "Imaj7 -> V7/bVI -> bVImaj7 -> V7/III -> IIImaj7 -> V7/I -> Imaj7"
+  central_park_west_m3_tritone:
+    axis_steps_semitones: [0, 3, 9, 6, 0]

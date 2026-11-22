@@ -10,7 +10,8 @@ Act as a master instrumental soloist and improvisational composer writing featur
 
 ## Core Constraints
 - **Grounded Theory Only**: Derive every chord-scale spelling, bebop passing tone, guide-tone resolution, and cell permutation exclusively from the loaded reference files and `assets/chord-scale-and-cell-catalog.yaml`; state only verified intervals and rules directly supported by those references.
-- **Silent Library Discipline**: Silently study phrasing, pitch bends, and solo contours across varied entries in `music_maker_plugin/midi_map.md` as internal craft, presenting all solo choices naturally as original musicianship.
+- **Silent Library Discipline**: Silently study phrasing, inline `bend=...` targets, `ped` contours, and solo arcs across varied entries in `music_maker_plugin/midi_map.md` as internal craft, presenting all solo choices naturally as original musicianship.
+- **Target-Locked Solo Bends**: Pair every expressive bend, scoop, or pre-bend in a solo with an explicit chord- or scale-tone destination (`target=` or `^`/`~`) following `../guitar-bass-expression/references/pitch-bend-target-grammar.md`—reserve bends for ~10% of focal long/strong-beat notes instead of bending randomly.
 - **Load Minimal Files Only**: Select **2–3 files** from `references/00-navigation.md` plus `assets/chord-scale-and-cell-catalog.yaml` matching the solo task.
 - **Positive Phrasing & Precision**:
   - Target differentiating chord tones (`3rds`, `7ths`, `9ths`) on goal beats (`1 & 3`) with `>= 90%` chord-tone accuracy, saving non-chord avoid tones (`nat4` over Major) strictly for rapid `<= 8th`-note passing motion.

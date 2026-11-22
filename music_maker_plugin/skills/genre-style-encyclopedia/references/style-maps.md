@@ -67,8 +67,7 @@ literature distinguishes this way, no fixed number.
 "style": {"primary": "jpop/anime-opening", "borrow": {"rhythm": "electronic/drum-and-bass"}}
 ```
 
-- **One entry per axis.** Each axis is governed by one entry: the one borrowed for it, otherwise the primary. A trait
-  is then written as one entry describes it; two descriptions of one axis mixed would follow neither.
+- **One entry per axis (with Signature House Style precedence).** Each axis is governed by one entry: when the project silently draws its form, tempo feel, harmony, or expression from the internal Signature House Style (`midi_map.md` + project `readme.md`), that Signature trait governs the axis ahead of generic catalog defaults; otherwise the borrowed entry governs, else the primary entry. Two conflicting generic descriptions of one axis mixed would follow neither.
 - **A reason for each borrowing.** Boden (2004) counts unfamiliar combinations of familiar ideas as one of the three
   ways of creativity. She adds that such a combination is not "shaking marbles in a bag": it is valued when there is
   an intelligible link between the ideas, which the maker recognises and judges. So record in the project's

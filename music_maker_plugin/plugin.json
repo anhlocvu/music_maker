@@ -2,9 +2,9 @@
   "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "music-maker-plugin",
   "displayName": "Music Maker (SoundFont Producer Studio)",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "logo": "assets/logo.svg",
-  "description": "Full-stack AI music producer plugin for composing, arranging, and rendering instrumental music and beats with SoundFonts (.sf2), grounded in music theory, drum/groove architecture, orchestration, guitar/bass fretboard expression, mixing/timbre curation, internalized MIDI-map craft, MPE multi-channel bends, sustain pedal & instrument strumming, and grid-aligned multi-track WAV stems.",
+  "description": "Full-stack AI music producer plugin for composing, arranging, and rendering instrumental music and beats with SoundFonts (.sf2), covering advanced harmony (Neo-Riemannian PLR/Tonnetz, Negative Harmony, Lendvai Axis, LCC, Film CMCR, Upper Structure Triads, Gospel Polychords, Barry Harris, Coltrane cycles), counterpoint/fugue/12-tone/pc-set/spectral/Schillinger craft, symphonic & Big-Band orchestration (Piston, Rimsky-Korsakov, ACTOR grouping, Drop/Spread/Cascade voicings), drum/groove architecture, guitar/bass expression, MPE, sustain pedal & strumming, and aligned multi-track WAV stems.",
   "category": "Music & Audio Production",
   "keywords": [
     "music",
@@ -18,7 +18,13 @@
     "instrumental",
     "beat",
     "music-theory",
+    "neo-riemannian",
+    "negative-harmony",
+    "counterpoint",
+    "fugue",
+    "post-tonal",
     "orchestration",
+    "big-band",
     "mixing",
     "multi-track",
     "stems",
@@ -26,7 +32,7 @@
   ],
   "suggestedPrompts": [
     "Activate music_maker_plugin and compose an original instrumental beat with expressive dynamics, pedal sustain, and full multi_track stems.",
-    "Design a melancholic neo-soul or cinematic piano-and-strings arrangement with pedal sustain, strummed voicings, and verified WAV/MIDI output."
+    "Design a symphonic or Big-Band arrangement with Upper Structure voicings, Neo-Riemannian/Negative Harmony reharmonization, ACTOR timbre blending, and verified WAV/MIDI output."
   ],
   "license": "MIT"
 }

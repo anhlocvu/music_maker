@@ -50,7 +50,12 @@ def analyze_directory(target_path):
             parsed = parse_midi_file(fpath)
             rel_path = os.path.relpath(fpath, target_path) if os.path.isdir(target_path) else os.path.basename(fpath)
             track_summaries = [
-                summarize_track(tr, beats_per_bar=parsed["beats_per_bar"], file_name=parsed["file_name"])
+                summarize_track(
+                    tr,
+                    beats_per_bar=parsed["beats_per_bar"],
+                    file_name=parsed["file_name"],
+                    bpm=parsed["bpm"],
+                )
                 for tr in parsed["tracks"]
             ]
             file_reports.append({
@@ -85,8 +90,18 @@ def analyze_directory(target_path):
     return results
 
 
+def _format_note_token(n):
+    """Format one note with duration, velocity, and optional inline pedal/bend tags."""
+    attrs = [f"d={n['dur_beats']}", f"v={n['vel']}"]
+    if n.get("ped"):
+        attrs.append("ped")
+    if n.get("bend"):
+        attrs.append(f"bend={n['bend']}")
+    return f"@{n['start_beat']} {n['note']}({','.join(attrs)})"
+
+
 def format_markdown(target_path, report):
-    """Format analysis report as Markdown including full per-project readme.md text."""
+    """Format analysis report as Markdown with Project README first and inline note bends."""
     lines = [f"# MIDI Reference Library Analysis (`{target_path}`)", ""]
     if not report:
         lines.append("_Chưa có project MIDI hoặc file `.mid` / `.midi` nào trong thư mục này._")
@@ -96,6 +111,21 @@ def format_markdown(target_path, report):
         kind = "MIDI Project" if group["is_folder"] else "MIDI File"
         lines.append(f"## [{kind}] `{group['project']}`")
         lines.append("")
+        if group["is_folder"]:
+            readme_label = group.get("readme_path") or "readme.md"
+            readme_body = group.get("readme")
+            lines.append(f"### Project README (`{readme_label}`)")
+            if readme_body is None:
+                lines.append("_No readme.md found in this project folder._")
+            elif not readme_body:
+                lines.append("_(Empty readme.md)_")
+            else:
+                fence = _markdown_fence(readme_body)
+                lines.append(f"{fence}markdown")
+                lines.append(readme_body)
+                lines.append(fence)
+            lines.append("")
+
         for f in group["files"]:
             lines.append(
                 f"### File: `{f['file_name']}` (`{f['relative_path']}`) — "
@@ -115,12 +145,12 @@ def format_markdown(target_path, report):
                 )
                 if tr["pedal_count"]:
                     lines.append(
-                        f"  - Pedal CC64: {tr['pedal_count']} lần (giữ TB {tr['pedal_avg_beats']} beats)"
+                        f"  - Pedal CC64: {tr['pedal_count']} lần (giữ TB {tr['pedal_avg_beats']} beats; đánh dấu `ped` trên nốt)"
                     )
-                if tr["pitchwheel_count"]:
+                if tr.get("bent_note_count") or tr["pitchwheel_count"]:
                     lines.append(
-                        f"  - Pitch Bend events: {tr['pitchwheel_count']} "
-                        f"(range ±{tr.get('bend_range_semitones', 2.0)} st)"
+                        f"  - Pitch Bend: {tr.get('bent_note_count', 0)} nốt có bend "
+                        f"(range ±{tr.get('bend_range_semitones', 2.0)} st; gắn trực tiếp `bend=...` trên từng nốt)"
                     )
                 if tr["high_activity_bars"]:
                     lines.append(f"  - Bars nhiều hoạt động / Fill gợi ý: {tr['high_activity_bars']}")
@@ -135,16 +165,6 @@ def format_markdown(target_path, report):
                         f"Chords: rolled={tr.get('rolled_chords', 0)}, block={tr.get('block_chords', 0)}"
                     )
 
-                pedals = tr.get("pedals", [])
-                if pedals:
-                    ped_items = [f"{p['start_beat']}->{p['end_beat']}({p['dur_beats']}b)" for p in pedals]
-                    lines.append(f"  - **All Pedal CC64 Events ({len(pedals)})**: " + ", ".join(ped_items))
-
-                bends = tr.get("pitch_bends", [])
-                if bends:
-                    bend_items = [f"@{b['beat']}:{b['pitch']}({b['semitones']:+.3f}st)" for b in bends]
-                    lines.append(f"  - **All Pitch Bend Events ({len(bends)})**: " + ", ".join(bend_items))
-
                 all_notes = tr.get("notes", [])
                 if all_notes:
                     bpb = f.get("beats_per_bar", 4.0)
@@ -155,26 +175,8 @@ def format_markdown(target_path, report):
                     for bar_num in sorted(by_bar):
                         bar_start = round((bar_num - 1) * bpb, 3)
                         bar_end = round(bar_num * bpb, 3)
-                        tokens = " | ".join(
-                            f"@{n['start_beat']} {n['note']}(d={n['dur_beats']},v={n['vel']})"
-                            for n in by_bar[bar_num]
-                        )
+                        tokens = " | ".join(_format_note_token(n) for n in by_bar[bar_num])
                         lines.append(f"    - Bar {bar_num} ({bar_start}..{bar_end}): {tokens}")
-            lines.append("")
-
-        if group["is_folder"]:
-            readme_label = group.get("readme_path") or "readme.md"
-            readme_body = group.get("readme")
-            lines.append(f"### Project README (`{readme_label}`)")
-            if readme_body is None:
-                lines.append("_No readme.md found in this project folder._")
-            elif not readme_body:
-                lines.append("_(Empty readme.md)_")
-            else:
-                fence = _markdown_fence(readme_body)
-                lines.append(f"{fence}markdown")
-                lines.append(readme_body)
-                lines.append(fence)
             lines.append("")
     return "\n".join(lines)
 

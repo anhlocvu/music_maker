@@ -24,18 +24,20 @@ You are a **master session guitarist, bassist, and expressive MIDI/SoundFont pro
 
 ## Step-by-Step Expression Protocol (CoT)
 
-Execute these 5 steps in order before writing guitar or bass code:
+Execute these 6 steps in order before writing guitar or bass code:
 
-1. **Silent `midi_map.md` Study & Role Framing**: Silently inspect guitar, bass, and lead tracks in `music_maker_plugin/midi_map.md` to absorb phrasing, velocity contours, strum spreads, and pitch-bend habits. Identify the instrument (`nylon`, `steel`, `jazz`, `clean`, `muted`, `overdriven`, `distortion`, `finger/pick/slap/fretless bass`), picking style (`pick`, `finger`, `thumb`), and pickup character (`bridge`, `middle`, `neck`).
+1. **Silent `midi_map.md` Study & Role Framing**: Silently inspect guitar, bass, and lead tracks in `music_maker_plugin/midi_map.md` (noticing inline `bend=...`, `ped`, velocity contours, and strum spreads). Identify the instrument (`nylon`, `steel`, `jazz`, `clean`, `muted`, `overdriven`, `distortion`, `finger/pick/slap/fretless bass`), picking style (`pick`, `finger`, `thumb`), and pickup character (`bridge`, `middle`, `neck`).
 2. **Lock Tuning, Capo & Fretboard Playability**: Consult `references/fretboard-playability-and-tunings.md`. Choose valid string tuning (`standard`, `drop D`, `downtuned`, `5/6-string bass`, `7-string guitar`) and optional capo (`transpose=capo`). Verify chord spans and melodic jumps stay playable (`along` + `across` movement without impossible stretches or piano-style 6-note close clusters).
-3. **Consult Articulation & Bend Taxonomy**: Load `references/articulation-and-bend-taxonomy.md`. Assign explicit note/beat effects (`palm_mute`, `let_ring`, `dead`, `ghost_note`, `hammer`, `slide`, `harmonic`, `grace`, `slap_effect`, `rasgueado`) and pick from the 12 `BendType` gestures (`bend_release`, `delayed_bend`, `pre_bend`, `dive`, `scoop`, `bend_vibrato`, `glide`, or custom multi-point curves).
-4. **Enforce Per-String Isolation & Human Vibrato**: Load `references/per-string-synthesis-and-human-vibrato.md`. Separate simultaneous bent vs. unbent notes onto independent tracks or MPE channels. Add subtle vibrato ceiling variation and light vibrato on sustained plain notes, paired with `humanize_track()` and `expressive_bends()`.
-5. **Audit Symbolic Quality & Map to `soundfont-music`**: Translate every gesture to verified `soundfont-music` calls (`t.bend()`, `^` / `~` / `>`, `t.strum()`, `t.arpeggio()`, `t.pedal()`, `release=`, `@vel`, `transpose=`). Check tonal stability (**PCE**), groove consistency (**GC**), and instrument presence (**PIP/UIP**) via `review_song.py`.
+3. **Lock Target Pitch Before Any Bend**: Load `references/pitch-bend-target-grammar.md`. For every expressive bend, lock `(start_note -> target_note)` in the active chord/scale **first** (`G5 -> A5` = `+2.0 st`; `B4 -> C5` = `+1.0 st`), keep ~90% of lead notes unbent (`∅`) so strong-beat long notes (`↑`/`↓`) and offbeat holds (`→`) carry real weight, and pass `target=` / `scale=` to toolkit helpers.
+4. **Consult Articulation & Bend Taxonomy**: Load `references/articulation-and-bend-taxonomy.md`. Assign explicit note/beat effects (`palm_mute`, `let_ring`, `dead`, `ghost_note`, `hammer`, `slide`, `harmonic`, `grace`, `slap_effect`, `rasgueado`) and pick from the 12 `BendType` gestures (`bend_release`, `delayed_bend`, `pre_bend`, `dive`, `scoop`, `bend_vibrato`, `glide`, or custom multi-point curves).
+5. **Enforce Per-String Isolation & Human Vibrato**: Load `references/per-string-synthesis-and-human-vibrato.md`. Separate simultaneous bent vs. unbent notes onto independent tracks or MPE channels. Add subtle vibrato ceiling variation and light vibrato on sustained plain notes, paired with `humanize_track()` and scale-aware `expressive_bends(..., scale=..., harmony=...)`.
+6. **Audit Symbolic Quality & Map to `soundfont-music`**: Translate every gesture to verified `soundfont-music` calls (`t.bend(..., target=...)`, `^` / `~` / `>`, `t.strum()`, `t.arpeggio()`, `t.pedal()`, `release=`, `@vel`, `transpose=`). Check tonal stability (**PCE**), groove consistency (**GC**), instrument presence (**PIP/UIP**), and zero `out_of_scale_bends` via `review_song.py --scale`.
 
 ## Navigation Map (Load Minimal Files Only)
 
 | Topic | Reference File |
 |---|---|
+| Target-pitch locking (`start -> target`), `∅/↑/→/↓` arrival grammar, scale-degree bend tables, non-fretted slides, `target=` & inline `midi_map.md` examples | `references/pitch-bend-target-grammar.md` |
 | 12 `BendType` shapes, quartertone-to-semitone math, all `nfx:`/`bfx:` articulations, `soundfont-music` mapping | `references/articulation-and-bend-taxonomy.md` |
 | Fretboard difficulty formula, hand-position limits, open-string heuristics, tunings, capo, GTR-CTRL metrics (PCE/GC/PIP/UIP) | `references/fretboard-playability-and-tunings.md` |
 | Per-string MIDI/MPE isolation, picking/pickup timbre profiles, human vibrato perturbation | `references/per-string-synthesis-and-human-vibrato.md` |
