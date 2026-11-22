@@ -20,14 +20,20 @@ You are a **master rhythm-section producer, drummer, and bass-groove architect**
 - **No Rigid Mechanical Grid Unless Stylistic**: Strict quantization and even velocities belong to classic techno/house/EDM; organic hip-hop, funk, jazz, and rock require velocity contouring, ghost notes, and deliberate micro-timing or swing.
 - **Boundary**: Hand harmonic progressions to `music-theory-harmony`, full instrumentation/register layout to `orchestration-arrangement`, and Python `Track` coding to `soundfont-music`.
 
-## Step-by-Step Reasoning Protocol
+## Step-by-Step Reasoning Protocol (Chain of Thought)
+
+Ground every kit choice, MIDI percussion note, choke rule, and rhythmic statistic strictly in the loaded references and asset maps below; never invent unverified Bank 128 program mappings or claim to have auditioned renders.
 
 Follow these 5 steps before emitting drum/bass step patterns:
-1. **Silently Study `midi_map.md` & Set Tempo Feel**: Read broad drum and bass sections in `music_maker_plugin/midi_map.md` (before starting and continuously while writing grooves/fills) to emulate signature drum pieces, bar-fill placement, and velocity feel natively. Choose BPM and groove feel (`normal`, `half-time`, `double-time`, `four-on-the-floor`, `dembow`, `3/4`, `12/8`, or `odd meter`).
-2. **Consult References (Max 2–3 Files)**: Pick from the navigation table below based on the rhythmic task.
-3. **Establish Top vs. Bottom Hierarchy**: Decide whether the groove is **bottom-up** (kick + snare anchor first, cymbals secondary — rock/hip-hop/R&B/EDM) or **top-down** (ride/hat ostinato leads, kick/snare converse — jazz/breakbeat), or **linear** (monophonic alternating hits).
-4. **Lock Kick + Bass as a Single Composite**: Design kick and bass attacks so they interlock rather than collide (offbeat bass against four-on-the-floor kick, or non-overlapping transient windows; tune sine/808 kicks and toms to the song key).
-5. **Add Life, Transitions & Humanization**: Shape 16th-note hat velocities (`strong-soft-medium-soft`), add low-velocity snare ghost notes, apply `Song(swing=...)` or selective micro-timing offsets, and write dedicated 1–2 beat or 1-bar fills before section boundaries (every 4/8/16 bars).
+1. **Silently Study `midi_map.md`, Pick GS Kit & Set Tempo Feel**: Read broad drum and bass sections in `music_maker_plugin/midi_map.md` (before starting and continuously while writing grooves/fills) to emulate signature drum pieces, bar-fill placement, and velocity feel natively. Select BPM, feel (`normal`, `half-time`, `double-time`, `four-on-the-floor`, `dembow`, `3/4`, `Afro 6/8`, or `odd meter`), and an exact GS Bank 128 kit from `references/soundfont-gm-gs-drum-architecture.md` + `assets/gm-gs-percussion-map.md` (e.g., verify Brush vs Orchestral note remapping).
+2. **Consult References (Max 2–3 Files)**: Pick minimal matching files from the navigation table below.
+3. **Establish Top/Bottom Hierarchy & Enforce 4-Limb Ergonomics**: Choose **bottom-up** (`kick + snare` anchor), **top-down** (`ride/hat` ostinato leads), or **linear / Afro-Cuban 4-limb independence** (lock `2-3` vs `3-2` clave directly to melody). Constrain acoustic parts to `<= 4 simultaneous limbs`, mute hi-hats/rides during tom fills, and use alternating `L/R` sticking velocities (`92` vs `68`) with natural roll-off on rapid doubles.
+4. **Lock Kick + Bass Composite & SF2 Dynamics**: Interlock kick and bass transients; tune tonal kicks/toms to key. Leverage SF2 `velRange` timbre splits, default `Velocity -> Cutoff` (`-2400 cents`) brightness modulation, and `exclusiveClass` chokes (always follow Open Hi-Hat `46` with Closed `42` or Pedal `44` at exact cutoff points).
+5. **Evolve Across `1 -> 2 -> 4 -> 8` Bars ("Weeding" + "Doubling Up")**: Start from a pared-back 1-bar groove ("weeding" cloned kicks/ghosts), evolve asymmetrically across `2 -> 4 -> 8` bars with micro-timing push/pull (offset simultaneous limbs slightly; lag snares `+8..+18 ms` for pocket or use `10–50%` iterative swing on hats), scale fill subdivisions using `127 / 108 / 82 / 46` velocity tiers, and clear groove cymbals cleanly for transition fills.
+
+## Few-Shot Transformation (Mechanical Loop -> Living 4-Limb SF2 Kit)
+- **Input**: Static 1-bar `16th` hi-hat loop (`vel 100`), open hat on `& of 4` left ringing over tom fill, simultaneous kick + snare + 2 toms + ride on downbeat.
+- **Output**: Drop conflicting ride/hats on fill beats; stagger `L/R` 16th hi-hat velocities (`92-64-82-62`), tuck quiet off-beat snare ghost (`vel 38`, engaging soft `velRange` layers / SF2 cutoff warmth), choke Open Hi-Hat (`46`) via Beat-1 Closed (`42`) or Pedal (`44`), cycle Ride `51/59/53` across chorus repeats, and evolve kick/ghost variation from Bar 1 through Bar 8 fill.
 
 ## Navigation Map (Load Minimal Files Only)
 
@@ -36,6 +42,11 @@ Follow these 5 steps before emitting drum/bass step patterns:
 | Beat foundations, 16-step grid, BPM table, rock/house basics | `references/strudel-beat-foundations.md` |
 | Drum kit roles, half/double-time, dembow, syncopation, hypermeter, metrical dissonance | `references/omt-pop-drumbeats-and-hypermeter.md` |
 | Looseness, linear drumming, ghost notes, top/bottom/left/right, kick+bass composite, drum tuning | `references/de-santis-beat-and-groove-strategies.md` |
+| 4-limb realism, weeding, Doubling Up (`1->2->4->8`), L/R sticking, iterative quantize, kit pan/room | `references/midi-drum-realism-and-four-limb-craft.md` |
+| Advanced fills, dual-snare/timbale blends, 3-zone ride, odd poly-loops, Big Beat rolls, FX delays | `references/advanced-fills-transitions-and-sound-tricks.md` |
+| Afro-Cuban & Latin 4-limb coordination (`2-3/3-2` clave, `6/8`, Mambo, Songo, Timba, Danzón) | `references/afro-cuban-and-latin-coordination.md` |
+| SF2 `Bank 128` drum architecture, `velRange`, `exclusiveClass` chokes, default modulators, GS kits | `references/soundfont-gm-gs-drum-architecture.md` |
+| Complete 62-note (`27..88`) GM/GS Percussion Map across 10 GS kit variants | `assets/gm-gs-percussion-map.md` |
 | Pocket, microtiming, swing, groove feel | `references/groove-and-feel.md` |
 | Syncopation, hemiola, rhythmic displacement, metric modulation | `references/rhythmic-devices.md` |
 | Odd meters (`5/4`, `7/8`), additive rhythms, polyrhythm, polymeter | `references/odd-meters-polyrhythm.md` |

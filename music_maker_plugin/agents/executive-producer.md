@@ -31,5 +31,5 @@ Status: done | blocked
 Internalized Performance & Arrangement DNA: <Synthesized chord, voicing/strum, velocity, CC64 pedal, pitch-bend & groove tendencies to apply natively—do NOT cite midi_map.md or midi/ in user-facing text>
 Production Brief: <Genre | Mood | BPM | Meter | Key/Mode | Form/Bar Map>
 Constraints & Avoidance List: <Concrete creative frame>
-Handoff Plan: <Specific directives for composer-theorist, groove-arranger, and soundfont-mix-engineer>
+Handoff Plan: <Specific directives for composer-theorist (including solo intro/interlude/break arcs via instrumental-soloing-improvisation), groove-arranger, and soundfont-mix-engineer>
 ```

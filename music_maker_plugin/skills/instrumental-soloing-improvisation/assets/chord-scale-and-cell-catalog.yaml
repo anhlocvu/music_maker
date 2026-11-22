@@ -1,0 +1,163 @@
+# Grounded Catalog for Instrumental Soloing & Improvisation
+# Synthesized strictly from the pedagogical reference files in ../references/
+
+version: "1.0"
+
+scale_families:
+  major:
+    ordered_consonant_to_tense:
+      - name: Major_Pentatonic
+        degrees: ["1", "2", "3", "5", "6"]
+        avoid_notes: []
+        notes: "Zero avoid tones; also used for blanketing and upper-structure pentatonics"
+      - name: Ionian
+        degrees: ["1", "2", "3", "4", "5", "6", "7"]
+        avoid_notes: ["4 (m9 vs 3rd; use <= 8th passing tone)"]
+      - name: Lydian
+        degrees: ["1", "2", "3", "#4", "5", "6", "7"]
+        avoid_notes: []
+        notes: "Raises 4 to #4 (#11) to eliminate the natural-4 avoid note"
+      - name: Bebop_Major
+        degrees: ["1", "2", "3", "4", "5", "#5", "6", "7"]
+        chromatic_passing_tone: "#5 (b6)"
+        upbeat_alignment: "Land #5 on upbeat when starting 8ths on 1, 3, 5, 6"
+      - name: Lydian_Augmented
+        source_mode: "Ascending Melodic Minor Mode 3"
+        degrees: ["1", "2", "3", "#4", "#5", "6", "7"]
+        target_chords: ["maj7(#5)"]
+
+  dominant_and_sus4:
+    ordered_consonant_to_tense:
+      - name: Mixolydian
+        degrees: ["1", "2", "3", "4", "5", "6", "b7"]
+        avoid_notes: ["4 (passing tone into 3)"]
+      - name: Bebop_Dominant
+        degrees: ["1", "2", "3", "4", "5", "6", "b7", "7"]
+        chromatic_passing_tone: "nat7 (maj7)"
+        upbeat_alignment: "Land nat7 on upbeat when starting descending 8ths on 1, 3, 5, b7"
+      - name: Lydian_Dominant
+        source_mode: "Ascending Melodic Minor Mode 4"
+        degrees: ["1", "2", "3", "#4", "5", "6", "b7"]
+        target_chords: ["7(#11)", "IV7", "bVII7 (backdoor)", "bII7 (tritone sub)"]
+      - name: Dorian_b2
+        source_mode: "Ascending Melodic Minor Mode 2"
+        degrees: ["1", "b2", "b3", "4", "5", "6", "b7"]
+        target_chords: ["7sus4(b9)"]
+      - name: Whole_Tone
+        degrees: ["1", "2", "3", "#4", "#5", "b7"]
+        transpositions: 2
+        notes: "Supplies altered 5th (#5/b5) with unaltered 9th"
+      - name: Diminished_Half_Whole
+        pattern: "H-W-H-W-H-W-H-W"
+        degrees: ["1", "b2", "#2", "3", "#4", "5", "6", "b7"]
+        transpositions: 3
+        target_chords: ["7(b9)", "7(#9)", "7(b9,#11,13)"]
+      - name: Phrygian_Dominant
+        source_mode: "Harmonic Minor Mode 5"
+        degrees: ["1", "b2", "3", "4", "5", "b6", "b7"]
+        target_chords: ["V7(b9,b13) in minor or modal borrowing"]
+      - name: Super_Locrian_Altered
+        source_mode: "Ascending Melodic Minor Mode 7"
+        aliases: ["Altered", "Diminished Whole-Tone"]
+        degrees: ["1", "b2", "#2", "3", "b5", "#5", "b7"]
+        target_chords: ["V7alt (b9, #9, #11/b5, b13/#5)"]
+
+  minor:
+    ordered_consonant_to_tense:
+      - name: Minor_Pentatonic
+        degrees: ["1", "b3", "4", "5", "b7"]
+      - name: Blues
+        degrees: ["1", "b3", "4", "#4", "5", "b7"]
+      - name: Dorian
+        degrees: ["1", "2", "b3", "4", "5", "6", "b7"]
+      - name: Bebop_Minor
+        degrees: ["1", "2", "b3", "3", "4", "5", "6", "b7"]
+        chromatic_passing_tone: "nat3 (maj3)"
+      - name: Aeolian
+        degrees: ["1", "2", "b3", "4", "5", "b6", "b7"]
+      - name: Ascending_Melodic_Minor
+        source_mode: "Ascending Melodic Minor Mode 1"
+        degrees: ["1", "2", "b3", "4", "5", "6", "7"]
+        target_chords: ["m(maj7)", "m6/9"]
+      - name: Harmonic_Minor
+        degrees: ["1", "2", "b3", "4", "5", "b6", "7"]
+      - name: Phrygian
+        degrees: ["1", "b2", "b3", "4", "5", "b6", "b7"]
+        uses: ["Dark minor", "Dominant/ii sub", "i - bII - bIII - bII blanketing"]
+
+  half_diminished:
+    ordered_consonant_to_tense:
+      - name: Locrian_Sharp2
+        source_mode: "Ascending Melodic Minor Mode 6"
+        degrees: ["1", "2", "b3", "4", "b5", "b6", "b7"]
+        target_chords: ["m7b5(maj9)", "iiø7"]
+      - name: Locrian
+        degrees: ["1", "b2", "b3", "4", "b5", "b6", "b7"]
+      - name: Harmonic_Minor_Mode_2
+        degrees: ["1", "b2", "b3", "4", "b5", "6", "b7"]
+        target_chords: ["iiø7"]
+      - name: Bebop_Half_Diminished
+        degrees: ["1", "b2", "b3", "4", "b5", "5", "b6", "b7"]
+        chromatic_passing_tone: "nat5"
+
+  diminished:
+    - name: Diminished_Whole_Half
+      pattern: "W-H-W-H-W-H-W-H"
+      degrees: ["1", "2", "b3", "4", "#4", "#5", "6", "7"]
+      transpositions: 3
+      target_chords: ["dim7"]
+
+pentatonic_and_triad_shortcuts:
+  chord_specific_major_pentatonics:
+    major_chord: "Major pentatonic on 2nd degree (highlights 9, #11, 13, 7, 3)"
+    minor_chord: "Major pentatonic on 4th degree (highlights 11, 5, 13, 1, 9)"
+    altered_dominant: "Major pentatonic on b5 degree (highlights b5/#11, b13, b7, b9, #9)"
+    ii_V_I_blanket: "Major pentatonic on 5th degree of I"
+  triad_pairs:
+    minor_examples: ["Cm + Dm", "Eb + F"]
+    dominant_example: "On C7: Dbm + Ebm"
+
+guide_tone_templates:
+  primary_spines: ["3 -> 7 -> 3", "7 -> 3 -> 7"]
+  color_lines: ["5 -> 9 -> 5", "9 -> 13 -> 9"]
+  chromatic_dominant_destinations: ["b9", "#9", "#11", "b13"]
+  boundary_rule: "Select pitches that differ between consecutive chords; minimize boundary transition distance w(C1, C2) at last-note-C1 -> first-note-C2"
+
+cell_patterns:
+  core_families: ["1-3-5 & octave triads", "1-5 four-note cells", "7th-cells (b7 resolves down, maj7 up)", "1-5 transposed to 5-9 upper half"]
+  permutations: ["Prime (P)", "Inversion (I)", "Retrograde (R)", "Retrograde-Inversion (RI)"]
+  circular_directions: ["up/up", "up/down", "down/down", "down/up"]
+  bebop_dominant_cells:
+    - "3 - b9 - b7 - maj7 -> 5th of I"
+    - "3 - b9 - maj7 - b7 -> 3rd of I"
+  ii_V_pairing: "Start ii7 cell on its 3rd degree"
+  side_stepping: "Real (exact-interval) transposition up/down 1 semitone or along root sequence before snapping back inside"
+
+parker_rhythm_stats:
+  source: "Mark Watkins BYUI Ch. 3 (12 Charlie Parker solos)"
+  phrase_beginnings:
+    upbeat_pct: 56
+    drag_pickup_pct_range: [13, 15]
+    downbeat_pct: 25
+    before_downbeat_combined_pct: 70
+  phrase_endings:
+    long_upbeat_do_dah_pct: 30
+    short_upbeat_bebop_pct: 24
+    short_downbeat_bop_pct: 10
+    long_downbeat_dah_pct: 7
+    other_and_basie_ism_pct: 29
+  articulation:
+    pure_tongue_upbeat_slur_downbeat_pct_range: [28, 32]
+    the_bop_stop_duration_beats: 0.67
+    turn_subdivision: "16th-note triplet + 8th aligned to swing triplet"
+    terminal_vibrato: "Below pitch, 2-3 pulses at note end"
+  rhythm_blocks:
+    cell_sizes: [1, 2, 3, 4]
+    modifiers: ["rests", "ties", "triplets", "displacement", "pickups"]
+    target_positions: ["On", "Half-way", "Ricochet", "Almost"]
+
+climax_arc:
+  golden_mean_ratio: 0.618
+  target_window_pct: [62, 67]
+  intensity_levers: ["rhythmic density", "rhythmic complexity", "pitch range", "dynamics"]
+  space_rule: "Generous breathing rests early; gradually diminish space toward climax"

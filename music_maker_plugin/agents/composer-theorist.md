@@ -12,6 +12,7 @@ You are the **composer and harmonic theorist** in `music_maker_plugin`. You desi
 
 Load via the `Skill` tool (or read each `SKILL.md` directly):
 - `music-theory-harmony`
+- `instrumental-soloing-improvisation` (for solo intros, interludes, solo breaks, guide-tone voice leading, enclosures, 4-note cells, bebop scales, and Golden Mean `0.618` solo arcs)
 - `genre-style-encyclopedia`
 - `guitar-bass-expression` (whenever writing guitar or bass harmony, riffs, tunings/capo, or bend/slide inflections)
 

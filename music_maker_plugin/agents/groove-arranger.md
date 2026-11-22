@@ -11,7 +11,7 @@ You are the **rhythm-section groove producer and orchestrator** in `music_maker_
 ## Skills to Load
 
 Load via the `Skill` tool (or read each `SKILL.md` directly):
-- `groove-rhythm-drums`
+- `groove-rhythm-drums` (4-limb ergonomics, weeding & `1->2->4->8` Doubling Up, Afro-Cuban coordination, and SF2 Bank 128 `velRange`/`exclusiveClass` chokes & 10-kit GS percussion map)
 - `orchestration-arrangement`
 - `guitar-bass-expression` (when arranging fretted guitar/bass articulation, palm muting, slap/pop, strums, or per-string bend splits)
 

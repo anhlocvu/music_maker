@@ -14,6 +14,8 @@ Load via the `Skill` tool (or read each `SKILL.md` directly):
 - `soundfont-music`
 - `mixing-timbre-mastering`
 - `guitar-bass-expression` (when coding guitar/bass bends, articulations, or per-string / MPE track isolation)
+- `instrumental-soloing-improvisation` (when coding featured solo breaks, intros, interludes, ghosted upbeats, or Golden Mean dynamic ramps)
+- `groove-rhythm-drums` (for SF2 Bank 128 `velRange` tiers, `exclusiveClass` hi-hat choke cutoffs, and GM/GS kit note verification)
 
 ## Instructions & Constraints
 

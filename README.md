@@ -6,7 +6,7 @@ Plugin Antigravity chuyên sáng tác **nhạc hòa tấu không lời (instrume
 
 ```text
 music_maker_plugin/
-├── plugin.json                        # Manifest Antigravity plugin (v1.3.0)
+├── plugin.json                        # Manifest Antigravity plugin (v1.4.0)
 ├── THIRD_PARTY.md                     # Ghi nhận giấy phép & bản quyền bên thứ ba
 ├── assets/logo.svg                    # Logo plugin
 ├── rules/
@@ -17,7 +17,8 @@ music_maker_plugin/
 │   ├── producer-mindset-workflow/     # Executive producer, Making Music, PWYM, Song Planner protocol, 12-word seed, moods
 │   ├── genre-style-encyclopedia/      # Blueprint 23+ thể loại, 7-Axis Style Maps & 10 craft playbooks
 │   ├── music-theory-harmony/          # Hòa âm, thang âm, Pop/Jazz schemas, climax/melody, 12-TET YAML
-│   ├── groove-rhythm-drums/           # Trống, pocket, 729 mẫu trống 16-step, Groove MIDI stats, khóa Kick-Bass
+│   ├── instrumental-soloing-improvisation/ # Solo nâng cao & ứng tác (guide tones, Harmonic Bricks, enclosures, 4-note cells, bebop, nhịp điệu Parker & Golden Mean 0.618)
+│   ├── groove-rhythm-drums/           # Trống nâng cao (4-limb MIDI realism, Doubling Up, Afro-Cuban, SF2 Bank 128 velRange/choke, 10-kit GM/GS map, 729 mẫu trống & Groove MIDI stats)
 │   ├── orchestration-arrangement/     # Dàn nhạc (Rimsky-Korsakov), 5 layers, low-interval hygiene, piano/organ idioms
 │   └── mixing-timbre-mastering/       # Timbre oppositions, Sound-Box 3D, spectral slope baselines & NumPy/GTR-CTRL QA
 ├── agents/                            # 4 specialist agents: executive-producer, composer-theorist, groove-arranger, soundfont-mix-engineer

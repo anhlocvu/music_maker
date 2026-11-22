@@ -275,3 +275,41 @@ Kích hoạt `llm-prompt-optimizer`, trích xuất toàn bộ 5 PDF + tài liệ
    - `uv run --with numpy --with scipy --with mido python -B -m unittest discover -s tools/tests -v`: **12/12 tests OK**.
    - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 8 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
    - Đã xóa toàn bộ tệp và thư mục con bên trong `tai lieu/` sau khi hoàn tất chưng cất và kiểm thử.
+
+---
+
+## Phiên làm việc: 2026-11-22 (Phần 2) — Chưng cất 28 Tài liệu Soloing & Trống/SoundFont theo Phương án A (v1.4.0)
+
+### Mục tiêu
+Áp dụng `llm-prompt-optimizer`, chưng cất chính xác 100% (tiếng Anh, không bịa đặt) toàn bộ **28 tài liệu** đã tải trong `tai lieu/` vào `music_maker_plugin` (Phương án A đã được người dùng duyệt):
+1. Tạo mới skill `instrumental-soloing-improvisation` từ **15 tài liệu** trong `tai lieu/01_hoa_am_va_solo/`.
+2. Nâng cấp toàn diện skill `groove-rhythm-drums` từ **13 tài liệu** trong `tai lieu/02_soan_trong_va_soundfont/`.
+3. Đồng bộ hệ sinh thái plugin (`agents/`, `rules/AGENTS.md`, `soundfont-music/SKILL.md`, `plugin.json` `1.4.0`, `THIRD_PARTY.md`, `README.md`) và rà soát qua `code-reviewer`.
+
+### Những thay đổi đã thực hiện
+
+1. **Skill mới `music_maker_plugin/skills/instrumental-soloing-improvisation/` (Tiếng Anh, chuẩn RSCIT + 5-step CoT + Few-Shot + Grounding)**:
+   - `SKILL.md` & `references/00-navigation.md`
+   - `references/chord-tone-and-guide-tone-architecture.md`: Hal Crook (90% chord-tone accuracy, 3-stage ladder), Alisdair MacRae Birch (3 harmonic approaches & Ideal Line `7th -> 3rd`), Simon Purcell (`3->7`, `5->9`, `9->13` & chromaticized `b9/#9/#11/b13`), Mark Watkins (`1 & 3` delineation), Bob Keller (avoid-note `nat4`), và Keating & Casey (ArXiv 2510.19666 shortest-path weighted DAG boundary voice leading).
+   - `references/harmonic-bricks-and-advanced-scales.md`: 5 chord-scale families (Major, Dominant/Sus4, Minor, Half-Diminished, Diminished), Melodic/Harmonic Minor modes, pentatonic blanketing (`5th of I`, `2nd/4th/b5`), triad pairs (`Cm+Dm`, `Eb+F`, `Dbm+Ebm`), John Elliott *Harmonic Lego Bricks*, Rhythm Changes Sets 1–6 & Bridges 1–5, Change Running vs Blanketing, 17 Dan Haerle Blues progressions.
+   - `references/approach-tones-and-enclosures.md`: Single & chromatic multiple approach tones, 2–4 note enclosures, skip/zig-zag, quartal melodies, Parker `16th-triplet + 8th` turns, avoid-note & error-recovery failsafe.
+   - `references/melodic-cells-and-sequences.md`: Mark Watkins 4-note cells (`1-3-5`, `1-5`, `7th`, `5-9` upper-half), `P/I/R/RI` permutations, circular `up/up`, `up/down`, `down/down`, `down/up`, real half-step side-stepping, `ii-V` pairing, bebop cells (`3-b9-b7-maj7 -> 5th`, `3-b9-maj7-b7 -> 3rd`), 4 Bebop scales & upbeat alignment rule.
+   - `references/rhythm-vocabulary-and-solo-form.md`: Thống kê thực nghiệm Charlie Parker (Watkins Ch. 3: `56%` upbeat + `13–15%` drag starts, 4 phrase endings, *The Bop* `~2/3` beat, ghosted upbeats, below-pitch terminal vibrato), Rhythm Blocks (`1–4` note cells & *On/Half-way/Ricochet/Almost*), Golden Mean (`0.618` / `62–67%`) climax arc, space discipline, song forms & arrangement slots.
+   - `assets/chord-scale-and-cell-catalog.yaml`: Bảng tra cứu YAML chuẩn xác đã kiểm tra bằng `pyyaml`.
+
+2. **Nâng cấp `music_maker_plugin/skills/groove-rhythm-drums/`**:
+   - `SKILL.md`: Áp dụng `llm-prompt-optimizer` (CoT 5 bước, kiểm soát 4-limb, weeding & `1->2->4->8` Doubling Up, khóa SF2 `velRange`/`exclusiveClass`, Few-Shot Transformation, bảng Navigation mở rộng).
+   - `references/midi-drum-realism-and-four-limb-craft.md`: 4-limb polyphony, mute hats/rides khi tom fill, L/R dominant-hand sticking asymmetry, weeding & Doubling Up `1->2->4->8`, iterative quantize `10–50%`, split micro-timing & audience-view panning.
+   - `references/advanced-fills-transitions-and-sound-tricks.md`: Dual-snare/timbale fills, flams, partial reversal, Sneaky Snare layer, 3-zone ride, odd poly-loops (`5-beat` conga + `7-beat` hat), 32nd-triplet Big Beat zipper rolls, octave kick layering, tempo-synced pitch-shifting delay & half-speed bouncing.
+   - `references/afro-cuban-and-latin-coordination.md`: Quy tắc chọn `2-3`/`3-2` clave theo giai điệu (Ignacio Berroa), Son vs Rumba clave, điều phối 4 chi & 14+ điệu Afro-Cuban (*Afro 6/8, Abaquà, Bembé, Guiro, Cáscara+Clave, Mambo, Son Montuno, Cha-cha, Mozambique, Songo, Timba, Rumba Guaguancó, Ballroom Rumba, Bolero, Danzón, Guajira*) cùng chỉ dẫn `Snare Off`, `Floor Tom Shell`, `Jam Block`, `Large/Small Cowbells`, `Soft Rim-Shot`, `Buzz Roll`.
+   - `references/soundfont-gm-gs-drum-architecture.md`: Quy chuẩn `wBank = 128` / GS `Bank 120`, 12 GS kits (`Standard`, `Room`, `Power`, `Electronic`, `808/909`, `Dance`, `Jazz`, `Brush`, `Orchestral`, `SFX`), `keyRange`/`velRange`/`exclusiveClass` chokes (`42/44/46`, triangle, guiro, cuica, whistle, surdo), default modulators & FluidSynth/GeneralUser GS `127/108/82/46` velocity ladder.
+   - `assets/gm-gs-percussion-map.md`: Bảng đầy đủ 62 nốt MIDI (`27 D#0` – `88 E5`) qua cả 10 cột kit GS, kèm ghi chú chuyển đổi `C3=60` (GS) sang `C4=60` (toolkit).
+
+3. **Đồng bộ Plugin & Sửa lỗi hậu `code-reviewer`**:
+   - Cập nhật `music_maker_plugin/agents/{composer-theorist,groove-arranger,executive-producer,soundfont-mix-engineer}.md`, `music_maker_plugin/skills/soundfont-music/SKILL.md`, `music_maker_plugin/rules/AGENTS.md`, `music_maker_plugin/plugin.json` (`1.4.0`), `music_maker_plugin/THIRD_PARTY.md`, và `README.md`.
+   - Xử lý toàn bộ góp ý từ `code-reviewer`: bỏ chú thích đường dẫn `tai lieu/` trong `chord-scale-and-cell-catalog.yaml`, sửa API không tồn tại `BendType.VIBRATO` sang `Track(..., vibrato=...)` / below-pitch terminal `t.bend(...)`, làm rõ quy ước quãng tám `C3=60` vs `C4=60` trong bảng trống, sửa vị trí `[0, 6, 12]` trên lưới 16 bước cho Son Clave, và sửa lỗi chính tả (`udu`, `Bouncing`, `THIRD_PARTY.md` path).
+
+### Kiểm thử sau cùng
+- `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 9 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
+- Kiểm tra `pyyaml` đối với `chord-scale-and-cell-catalog.yaml`: **OK** (7 root keys).
+- `uv run --with numpy --with scipy --with mido python -B -m unittest discover -s tools/tests -v`: **12/12 tests OK**.
