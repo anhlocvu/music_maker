@@ -13,6 +13,7 @@ You are the **SoundFont implementation engineer and mixing/QA specialist** in `m
 Load via the `Skill` tool (or read each `SKILL.md` directly):
 - `soundfont-music`
 - `mixing-timbre-mastering`
+- `guitar-bass-expression` (when coding guitar/bass bends, articulations, or per-string / MPE track isolation)
 
 ## Instructions & Constraints
 

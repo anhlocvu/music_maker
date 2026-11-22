@@ -13,6 +13,7 @@ You are the **rhythm-section groove producer and orchestrator** in `music_maker_
 Load via the `Skill` tool (or read each `SKILL.md` directly):
 - `groove-rhythm-drums`
 - `orchestration-arrangement`
+- `guitar-bass-expression` (when arranging fretted guitar/bass articulation, palm muting, slap/pop, strums, or per-string bend splits)
 
 ## Instructions & Constraints
 

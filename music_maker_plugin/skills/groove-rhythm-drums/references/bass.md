@@ -134,6 +134,13 @@ E pedal eighths, accents with guitar chugs.
 Only leave pedal for section changes or fills.
 ```
 
+## Articulation & expressive techniques
+
+- **Palm mute (`nfx:palm_mute`)**: dampen strings near the bridge (`release=0.025–0.045`, slightly shortened note gate) for tight rock, punk, and pop-chorus 8ths.
+- **Dead / ghost notes (`nfx:dead`, `nfx:ghost_note`)**: muted percussive `X` rakes (`dur 0.05–0.08`, `vel 30–55`) between main bass notes lock funk, R&B, and neo-soul pocket.
+- **Slap & pop (`bfx:slap_effect`)**: thumb slaps on low `E1–A2` roots (`vel 105–118`) paired with crisp octave pops (`vel 110–124`, short gate) on `D2–G2`; use GM `slapbass` / `slapbass2` (prog 36/37).
+- **Hammer-on, slide & pitch bends**: subtle `scoop` (`-1` to `-2` st) into chorus roots, `delayed_bend` on sustained cadence peaks, and `dive` slides off phrase endings; see the `guitar-bass-expression` skill for the full 12-bend taxonomy and 4/5/6-string tunings.
+
 ## Common pitfalls
 
 - **Do not make the bass constantly melodic under a busy vocal.** Support first.
@@ -143,6 +150,8 @@ Only leave pedal for section changes or fills.
 - **Do not write upright bass like electric bass without considering sustain and attack.**
 
 ## Cross-references
+
+- Deep bass articulations, slap/pop, slides, bends & 4/5/6-string tunings → `guitar-bass-expression` skill
 
 - Groove and feel → `../rhythm-groove/groove-and-feel.md`
 - Drums/percussion → `drums-percussion.md`

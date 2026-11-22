@@ -19,3 +19,10 @@ Original plugin code, skill prompts, and documentation in `music_maker_plugin` a
 
 ## 4. `song-planner` Workflow Discipline
 - Pre-composition Song Sheet, No House Style, one-batch clarifying questions, mandatory wildcard idea, and user-riff preservation protocol distilled into `skills/producer-mindset-workflow/references/song-planner-protocol.md`.
+
+## 5. Guitar/Bass Expression, Playability & Technical Specs
+- **DadaGP & `dadagp.py`** (Pedro Sarmento et al., ISMIR 2021, CC BY 4.0 / MIT-style open research code): 12 `BendType` taxonomy, `nfx:`/`bfx:` articulations, and tuning vectors distilled into `skills/guitar-bass-expression/references/articulation-and-bend-taxonomy.md`.
+- **GTR-CTRL / ShredGP** (Pedro Sarmento et al., EvoMUSART 2023): symbolic evaluation metrics (`PCE`, `GC`, `PIP`, `UIP`) distilled into `skills/guitar-bass-expression/` and implemented in `engine/review.py`.
+- **Fretting-Transformer** (Anna Hamberger et al., 2025, CC BY 3.0): fretboard transition difficulty (`along`/`across`/`locality`), open-string heuristics, and capo/tuning conditioning distilled into `skills/guitar-bass-expression/references/fretboard-playability-and-tunings.md`.
+- **SynthTab** (Yongyi Zang et al., 2023): per-string MIDI isolation, picking/pickup timbre profiles, and human vibrato perturbations distilled into `skills/guitar-bass-expression/references/per-string-synthesis-and-human-vibrato.md`.
+- **SoundFont 2.04 Specification** (E-mu Systems / Creative Technology, 2006), **FluidSynth 2.6 Docs** (CC BY-SA 3.0 / LGPL-2.1), and **MPE 1.0 (RP35 / AMEI-MMA CA-034, 2018)**: synthesis model, modulators, `sampleModes=3`, `exclusiveClass`, and MPE zone/channel allocation distilled into `skills/soundfont-music/references/` (`sf2-spec-and-modulators.md`, `mpe-and-multi-channel.md`) and implemented in `engine/sf2.py` & `engine/song.py`.

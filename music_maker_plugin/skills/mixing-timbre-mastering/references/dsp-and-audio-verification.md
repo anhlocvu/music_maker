@@ -52,3 +52,4 @@ def inspect_wav(path):
 - `crest_db`: typically `8–18 dB` depending on genre (compressed/dense electronic vs. dynamic acoustic/orchestral).
 - `lr_corr`: `> 0.0` overall on mixes (avoid near `-1.0` phase inversion); **for `multi_track/` stems exported with `keep_pan=False`, check that L and R balance matches centered `pan=0`**.
 - **Duration & Alignment**: Confirm mix WAV matches expected bar count at project BPM and all `multi_track/` stems start from beat 0 without trailing past the song end.
+- **Pre-Render Symbolic QA (`GTR-CTRL` metrics via `review_song.py`)**: Before rendering audio, inspect **PCE** (*Pitch Class Histogram Entropy* — flags overly static loops vs. aimless chromatic drift), **GC** (*Groove Consistency* — bar-to-bar rhythmic pocket stability), and **PIP/UIP** (*Prompted/Unprompted Instrument Presence* — confirms requested tracks are active and stray tracks are absent).

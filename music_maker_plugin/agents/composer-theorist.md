@@ -13,6 +13,7 @@ You are the **composer and harmonic theorist** in `music_maker_plugin`. You desi
 Load via the `Skill` tool (or read each `SKILL.md` directly):
 - `music-theory-harmony`
 - `genre-style-encyclopedia`
+- `guitar-bass-expression` (whenever writing guitar or bass harmony, riffs, tunings/capo, or bend/slide inflections)
 
 ## Instructions & Constraints
 

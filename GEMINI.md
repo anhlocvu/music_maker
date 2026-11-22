@@ -234,3 +234,44 @@ Tránh tràn ngữ cảnh khi kho `midi/` có nhiều project bằng cách tạo
 ### Kiểm thử sau cùng
 - `uv run python -B -m unittest discover -s tools/tests -v`: **7/7 tests OK**.
 - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 7 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
+
+---
+
+## Phiên làm việc: 2026-11-22 — Chưng cất `tai lieu/` vào Skill `guitar-bass-expression` & Nâng cấp Toolkit v1.3.0 (SF2 2.04, MPE 1.0, GTR-CTRL)
+
+### Mục tiêu
+Kích hoạt `llm-prompt-optimizer`, trích xuất toàn bộ 5 PDF + tài liệu spec/code trong `tai lieu/` sang Markdown để chưng cất chính xác 100% (tiếng Anh) thành skill mới và bổ sung vào các skill/agent/toolkit hiện tại, sau đó dọn sạch nội dung trong `tai lieu/`.
+
+### Những thay đổi đã thực hiện
+
+1. **Trích xuất & chưng cất tài liệu `tai lieu/` (`pymupdf4llm`)**:
+   - `DadaGP_ISMIR2021.pdf` (8 trang) + `dadagp.py` (2.078 dòng) + `README.md` → 12 `BendType`, `BendPoint` (quartertones), đầy đủ `nfx:` / `bfx:`, tuning vectors & resolution `960 ticks/quarter`.
+   - `Fretting_Transformer_2506.14223.pdf` (8 trang) → công thức độ khó bấm cần đàn (`along`/`across`/`locality`), heuristic dây buông, capo & alternate tunings.
+   - `GTR_CTRL_ShredGP_2302.05393.pdf` (16 trang) → tách điều khiển nhạc cụ/genre khỏi nốt đầu & 4 chỉ số đánh giá symbolic (`PCE`, `GC`, `PIP`, `UIP`).
+   - `SynthTab_2309.09085.pdf` (5 trang) → per-string MIDI isolation, micro-vibrato & picking/pickup profiles.
+   - `sfspec24.pdf` (69 trang) + `fluidsynth_devdoc.txt` + `MPE-final-spec-notes.md` → SoundFont 2.04 generators/modulators/`sampleModes=3`/`exclusiveClass` và MPE 1.0 (RP35) `RPN 00 06`, Lower/Upper Zones, member channel allocation.
+
+2. **Skill mới `music_maker_plugin/skills/guitar-bass-expression/` (Tiếng Anh, chuẩn RSCIT + CoT)**:
+   - `SKILL.md`
+   - `references/articulation-and-bend-taxonomy.md`
+   - `references/fretboard-playability-and-tunings.md`
+   - `references/per-string-synthesis-and-human-vibrato.md`
+
+3. **Bổ sung vào các Skills, Agents, Rules & Manifest hiện tại**:
+   - `soundfont-music`: thêm `references/sf2-spec-and-modulators.md`, `references/mpe-and-multi-channel.md`; cập nhật `SKILL.md` & `references/toolkit.md`.
+   - `orchestration-arrangement`: cập nhật `references/instrument-idiom/guitar.md` (box 4 ngăn, quy tắc tách dây khi polyphonic bend, link sang `guitar-bass-expression`).
+   - `groove-rhythm-drums`: cập nhật `references/bass.md` (palm mute, dead/ghost, slap/pop, bends/slides bass, link sang `guitar-bass-expression`).
+   - `mixing-timbre-mastering`: cập nhật `references/sound-selection.md` (`Vel -> FilterFc` SF2, picking/pickup contrast) & `references/dsp-and-audio-verification.md` (pre-render symbolic QA `PCE`/`GC`/`PIP`/`UIP`).
+   - Đồng bộ `music_maker_plugin/rules/AGENTS.md`, `music_maker_plugin/agents/{composer-theorist,groove-arranger,soundfont-mix-engineer}.md`, `music_maker_plugin/plugin.json` (`1.3.0`), `music_maker_plugin/THIRD_PARTY.md` và `README.md`.
+
+4. **Nâng cấp Python Toolkit (`music_maker_plugin/skills/soundfont-music/scripts/toolkit/`) theo TDD**:
+   - `engine/review.py` & `review_song.py`: thêm `symbolic_metrics()` (`PCE`, `GC`, `PIP`, `UIP`) và cờ `--prompted`.
+   - `engine/sf2.py`: thêm `EXCLUSIVE_CLASS = 57` (`Preset.exclusive_class()`), `SoundFont.close()`, và hỗ trợ `sampleModes == 3` (loop khi giữ phím, phát tiếp phần đuôi đến `end` khi nhả phím).
+   - `engine/song.py`: thêm `exclusiveClass` choke (có tính `swing`) trong `_render_track()` và chế độ `export_midi(..., mpe=True, mpe_bend_range=...)` (Lower Zone `RPN 00 06`, `RPN 00 00` trên member channels, cấp phát kênh động tránh nhiễu bend đa âm và giữ `ch=9` cho GM drums).
+   - `tools/tests/test_toolkit_specs.py`: thêm 5 unit tests mới cho GTR-CTRL metrics, SF2 `sampleModes=3` & `exclusiveClass`, và MPE MIDI export.
+
+5. **Kiểm thử & Dọn dẹp sau cùng**:
+   - `py_compile` (`sf2.py`, `song.py`, `review.py`, `review_song.py`): **OK**.
+   - `uv run --with numpy --with scipy --with mido python -B -m unittest discover -s tools/tests -v`: **12/12 tests OK**.
+   - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 8 · agents 4 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
+   - Đã xóa toàn bộ tệp và thư mục con bên trong `tai lieu/` sau khi hoàn tất chưng cất và kiểm thử.

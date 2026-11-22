@@ -153,6 +153,8 @@ Before searching, write down for the part:
 
 **Notes far from a sample's pitch.** A sampled note played away from the pitch it was recorded at changes its tone, and a vibrato or other movement in it speeds up as it goes higher; a multisample gives each source sample a range of three or four semitones (Howell 2006), and one sample played across an octave sounds "very obviously less natural a few semitones in either direction from the root note" (Walden 2023). With `--config`, `review` names notes played more than 4 semitones from their sample, a limit this skill set ([outputs.md](outputs.md), `transposed_samples`).
 
+**SoundFont 2.04 velocity-to-timbre & guitar pickup contrast.** Under SF2 default modulators (`sfspec24.pdf` Sec 8.4.1–8.4.2), lower MIDI velocities simultaneously increase attenuation (`960 cB` concave) and darken filter cutoff (`-2400 cents` linear), so shaping `@vel` contours acts as both a level and brightness control. For guitars (`SynthTab` Sec 3.5), pair darker **Neck / Finger / Thumb** timbres (`nylonguitar`, `jazzguitar`) for chord beds and reserve brighter **Bridge / Pick** timbres (`steelguitar`, `odguitar`, `distguitar`) for foreground hooks or leads.
+
 **Electric pianos** are there whenever a part wants one; none is a sampled Rhodes or Wurlitzer:
 - Surge XT's electric pianos, found by name: `studio.py sounds --role keys --name ep` (or `rhodes`, `wurli`, `suitcase`) with the piece's `--seed` ([electronic-sounds.md](electronic-sounds.md));
 - the sampled TX81Z FM pianos (`vcsl_keys` 0:4, 1:4) and its clavinet-like Clavisynth (`vcsl_keys` 0:7);

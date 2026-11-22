@@ -13,6 +13,7 @@ This plugin specializes in composing, arranging, mixing, and rendering **instrum
      - `music-theory-harmony` — Scales, modes, functional/pop/jazz harmony, voice leading, counterpoint, climax & motif craft.
      - `groove-rhythm-drums` — Drum kit roles, pocket, humanization, ghost notes, `3+3+2`, kick-bass composite locking, 729 classic drum patterns & Groove MIDI empirical stats.
      - `orchestration-arrangement` — Register spacing, low-interval hygiene, Rimsky-Korsakov blending & economy of colour, idiomatic piano/organ/pedal/strum/arpeggio writing, song form.
+     - `guitar-bass-expression` — Fretboard playability (`along`/`across` transition geometry, tunings & capo), DadaGP's 12 pitch-bend types & note/beat articulations (`palm_mute`, `let_ring`, `slides`, `hammer`, 5 harmonics, `slap/pop`, `rasgueado`), per-string MIDI/MPE bend isolation, and human vibrato perturbations.
      - `mixing-timbre-mastering` — Lavengood timbre oppositions, Moore's 5 layers, 3D Sound-Box balance, anti-mud, centered-pan `multi_track/` stem QA, K-weighted LUFS & commercial spectral-slope verification.
 
 ## 2. Internalized MIDI Map Mastery (`midi_map.md`)

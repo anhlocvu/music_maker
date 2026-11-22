@@ -1,6 +1,7 @@
-"""Score diagnostics for soundfont-music Songs (low intervals, vertical rubs, parallels, harmony, static loops)."""
+"""Score diagnostics for soundfont-music Songs (low intervals, vertical rubs, parallels, harmony, static loops, GTR-CTRL metrics)."""
 from collections import defaultdict
 import itertools
+import math
 
 from . import harmony as harm, instruments
 from .voicing import LOW_INTERVAL_LIMITS
@@ -27,7 +28,65 @@ def _active_events(song):
     return pitched
 
 
-def review_song(song, harmony=None, allow_parallels=True, bpb=4.0):
+def symbolic_metrics(song, prompted_tracks=None, bpb=4.0, steps_per_bar=16):
+    """Compute GTR-CTRL symbolic metrics: PCE, GC, PIP, and UIP."""
+    pc_weights = [0.0] * 12
+    for tr in song.tracks:
+        if _is_drum(tr):
+            continue
+        for _start, dur, key, _vel, _bend in tr.events:
+            pc_weights[int(key) % 12] += max(0.01, float(dur))
+    total_w = sum(pc_weights)
+    if total_w > 0:
+        pce = -sum((w / total_w) * math.log2(w / total_w) for w in pc_weights if w > 0)
+    else:
+        pce = 0.0
+
+    max_len = max((tr.length() for tr in song.tracks), default=0.0)
+    total_bars = max(1, int(math.ceil(max_len / bpb))) if max_len > 0 else 1
+
+    bar_sims = []
+    for tr in song.tracks:
+        if not tr.events or total_bars < 2:
+            continue
+        grids = [[0] * steps_per_bar for _ in range(total_bars)]
+        for start, _dur, _key, _vel, _bend in tr.events:
+            bar_idx = min(total_bars - 1, max(0, int(start // bpb)))
+            step_idx = min(steps_per_bar - 1, max(0, int(round(((start % bpb) / bpb) * steps_per_bar))))
+            grids[bar_idx][step_idx] = 1
+        for b in range(total_bars - 1):
+            if not any(grids[b]) and not any(grids[b + 1]):
+                continue
+            diffs = sum(1 for x, y in zip(grids[b], grids[b + 1]) if x != y)
+            bar_sims.append(1.0 - (diffs / float(steps_per_bar)))
+    gc = sum(bar_sims) / len(bar_sims) if bar_sims else 1.0
+
+    prompted_set = set(prompted_tracks) if prompted_tracks is not None else {tr.name for tr in song.tracks}
+    prompted_active = 0
+    unprompted_active = 0
+    total_active = 0
+    total_measures = len(song.tracks) * total_bars
+    for tr in song.tracks:
+        active_bars = {min(total_bars - 1, max(0, int(ev[0] // bpb))) for ev in tr.events}
+        act_count = len(active_bars)
+        total_active += act_count
+        if tr.name in prompted_set:
+            prompted_active += act_count
+        else:
+            unprompted_active += act_count
+
+    pip = (prompted_active / float(total_measures)) if total_measures > 0 else 0.0
+    uip = (unprompted_active / float(total_active)) if total_active > 0 else 0.0
+    return {
+        "pitch_class_entropy": round(pce, 4),
+        "pce_norm": round(pce / math.log2(12), 4),
+        "groove_consistency": round(gc, 4),
+        "pip": round(pip, 4),
+        "uip": round(uip, 4),
+    }
+
+
+def review_song(song, harmony=None, allow_parallels=True, bpb=4.0, prompted_tracks=None):
     """Audit a Song's written notes and return structured musical review findings."""
     pitched = _active_events(song)
     rubs, low_mud, outside = [], [], []
@@ -107,9 +166,11 @@ def review_song(song, harmony=None, allow_parallels=True, bpb=4.0):
                 run = 1
 
     lengths = {tr.name: round(tr.length(), 3) for tr in song.tracks}
+    metrics = symbolic_metrics(song, prompted_tracks=prompted_tracks, bpb=bpb)
     return {
         "title": song.title,
         "track_lengths_beats": lengths,
+        "metrics": metrics,
         "low_intervals": low_mud[:30],
         "vertical_rubs": rubs[:30],
         "outside_chord": outside[:30],
@@ -121,6 +182,12 @@ def review_song(song, harmony=None, allow_parallels=True, bpb=4.0):
 def format_review(report):
     """Format a `review_song` dict into a concise human-readable report."""
     lines = [f"# Score Review: {report['title']}"]
+    if "metrics" in report:
+        m = report["metrics"]
+        lines.append(
+            f"- metrics: PCE={m['pitch_class_entropy']:.3f} (norm={m['pce_norm']:.3f}) | "
+            f"GC={m['groove_consistency']:.3f} | PIP={m['pip']:.3f} | UIP={m['uip']:.3f}"
+        )
     for key in ("low_intervals", "vertical_rubs", "outside_chord", "parallels", "static_loops"):
         items = report.get(key, [])
         lines.append(f"- {key}: {len(items)}")

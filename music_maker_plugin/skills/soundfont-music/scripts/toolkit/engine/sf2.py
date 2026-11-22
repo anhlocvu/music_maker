@@ -17,13 +17,13 @@ DELAY_VOL, ATTACK_VOL, HOLD_VOL, DECAY_VOL, SUSTAIN_VOL, RELEASE_VOL = 33, 34, 3
 INSTRUMENT, KEY_RANGE, VEL_RANGE = 41, 43, 44
 KEYNUM, VELOCITY, ATTENUATION = 46, 47, 48
 COARSE_TUNE, FINE_TUNE, SAMPLE_ID, SAMPLE_MODES = 51, 52, 53, 54
-SCALE_TUNING, OVERRIDE_ROOT = 56, 58
+SCALE_TUNING, EXCLUSIVE_CLASS, OVERRIDE_ROOT = 56, 57, 58
 
 RANGE_GENS = (KEY_RANGE, VEL_RANGE)
 # generators that are NOT added from the preset level (sample addressing etc.)
 NON_ADDITIVE = {START_OFS, END_OFS, STARTLOOP_OFS, ENDLOOP_OFS, START_COARSE,
                 END_COARSE, STARTLOOP_COARSE, ENDLOOP_COARSE, KEYNUM, VELOCITY,
-                SAMPLE_MODES, OVERRIDE_ROOT, SAMPLE_ID, INSTRUMENT}
+                SAMPLE_MODES, EXCLUSIVE_CLASS, OVERRIDE_ROOT, SAMPLE_ID, INSTRUMENT}
 
 DEFAULTS = {FILTER_FC: 13500, DELAY_VOL: -12000, ATTACK_VOL: -12000,
             HOLD_VOL: -12000, DECAY_VOL: -12000, SUSTAIN_VOL: 0,
@@ -56,6 +56,18 @@ class Preset:
     def __repr__(self):
         return f"<Preset {self.bank:03d}:{self.program:03d} {self.name!r}>"
 
+    def exclusive_class(self, key, vel):
+        """Return max non-zero SF2 `exclusiveClass` across matching zones, or 0."""
+        excl = 0
+        for gens, _shdr in self.zones:
+            lo, hi = gens.get(KEY_RANGE, (0, 127))
+            vlo, vhi = gens.get(VEL_RANGE, (0, 127))
+            if lo <= key <= hi and vlo <= vel <= vhi:
+                val = int(gens.get(EXCLUSIVE_CLASS, 0))
+                if val > excl:
+                    excl = val
+        return excl
+
     def render(self, key, vel, dur, sr=44100, tail=None, cents=0, vibrato=None, bend=None):
         """Render a note: `dur` seconds held, then release. Returns (n, 2) float32."""
         out = None
@@ -81,6 +93,14 @@ class SoundFont:
         self.path = path
         self._parse()
         self._preset_cache = {}
+
+    def close(self):
+        """Release memory-mapped sample buffer handle."""
+        mm = getattr(getattr(self, "samples", None), "_mmap", None)
+        if mm is not None:
+            mm.close()
+        self.samples = None
+        self._preset_cache.clear()
 
     # ---------------------------------------------------------------- parsing
     def _parse(self):
@@ -135,7 +155,7 @@ class SoundFont:
     def _gen_value(oper, raw):
         if oper in RANGE_GENS:
             return (raw[0], raw[1])
-        if oper in (INSTRUMENT, SAMPLE_ID, SAMPLE_MODES):
+        if oper in (INSTRUMENT, SAMPLE_ID, SAMPLE_MODES, EXCLUSIVE_CLASS):
             return struct.unpack("<H", raw)[0]
         return struct.unpack("<h", raw)[0]
 
@@ -209,7 +229,9 @@ class SoundFont:
         end = min(end, self._smpl_count)
         if end - start < 2 or srate == 0:
             return None
-        looped = g.get(SAMPLE_MODES, 0) & 1 and start <= sloop < eloop <= end and eloop - sloop > 1
+        sample_mode = g.get(SAMPLE_MODES, 0) & 3
+        loop_valid = start <= sloop < eloop <= end and eloop - sloop > 1
+        looped = sample_mode in (1, 3) and loop_valid
 
         if g.get(KEYNUM, -1) >= 0:
             key = g[KEYNUM]
@@ -249,10 +271,35 @@ class SoundFont:
             pos = np.arange(n_total, dtype=np.float64) * step
         if looped:
             llen = eloop - sloop
-            rel = start + pos
-            over = rel >= eloop
-            rel[over] = sloop + np.mod(rel[over] - sloop, llen)
-            idx = rel
+            if sample_mode == 3:
+                # Loop while key depressed ([:n_on]), then play through eloop to end on release
+                rel = np.empty(n_total, dtype=np.float64)
+                on_cnt = min(n_on, n_total)
+                if on_cnt > 0:
+                    on_rel = start + pos[:on_cnt]
+                    over = on_rel >= eloop
+                    on_rel[over] = sloop + np.mod(on_rel[over] - sloop, llen)
+                    rel[:on_cnt] = on_rel
+                    last_rel = float(on_rel[-1])
+                    last_pos = float(pos[on_cnt - 1])
+                else:
+                    last_rel = float(start)
+                    last_pos = 0.0
+                if on_cnt < n_total:
+                    rel[on_cnt:] = last_rel + (pos[on_cnt:] - last_pos)
+                    valid = rel < (end - 1)
+                    if not np.all(valid):
+                        cut = int(np.argmax(~valid))
+                        if cut <= on_cnt:
+                            cut = max(1, on_cnt)
+                        rel = np.minimum(rel[:cut], end - 2)
+                        n_total = len(rel)
+                idx = rel
+            else:
+                rel = start + pos
+                over = rel >= eloop
+                rel[over] = sloop + np.mod(rel[over] - sloop, llen)
+                idx = rel
         else:
             idx = start + pos
         i0 = idx.astype(np.int64)
@@ -261,8 +308,12 @@ class SoundFont:
         seg = np.asarray(self.samples[lo_i:hi_i], dtype=np.float32) / 32768.0
         a = seg[i0 - lo_i]
         j = i0 + 1
-        if looped:
+        if looped and sample_mode == 1:
             j = np.where(j >= eloop, sloop, j)
+        elif looped and sample_mode == 3:
+            on_cnt = min(n_on, n_total)
+            if on_cnt > 0:
+                j[:on_cnt] = np.where(j[:on_cnt] >= eloop, sloop, j[:on_cnt])
         j = np.minimum(j - lo_i, len(seg) - 1)
         b = seg[j]
         wave = a + (b - a) * frac

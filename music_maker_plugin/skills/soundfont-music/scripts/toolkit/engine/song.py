@@ -285,9 +285,26 @@ class Song:
     def _render_track(self, t, n, keep_pan=True):
         """Render a single Track to a stereo dry buffer of length `n` samples."""
         preset = instruments.load(t.instrument)
+        excl_fn = getattr(preset, "exclusive_class", None)
+        choke_secs = {}
+        if excl_fn is not None and t.events:
+            ordered = sorted(enumerate(t.events), key=lambda item: (item[1][0], item[1][2]))
+            active_excl = {}
+            for idx, (start, _beats, key, vel, _bend) in ordered:
+                excl = excl_fn(key, vel)
+                if excl > 0:
+                    s_eff = start + (self.swing * 0.5 if self.swing and (start * 2) % 1 == 0.5 else 0.0)
+                    s_sec = self.beats_to_sec(s_eff)
+                    if excl in active_excl:
+                        prev_idx, prev_sec = active_excl[excl]
+                        if s_sec > prev_sec + 1e-6:
+                            choke_secs[prev_idx] = s_sec
+                    active_excl[excl] = (idx, s_sec)
+
         buf = np.zeros((n, 2), np.float32)
         cache = {}
-        for start, beats, key, vel, bend in t.events:
+        fade_len = max(1, int(0.01 * SR))
+        for idx, (start, beats, key, vel, bend) in enumerate(t.events):
             s = start
             if self.swing and (start * 2) % 1 == 0.5:  # delay off-beat 8ths
                 s += self.swing * 0.5
@@ -299,8 +316,16 @@ class Song:
                                           cents=t.cents + self.pitch, vibrato=t.vibrato,
                                           bend=bend)
             v = cache[ck]
-            i = int(self.beats_to_sec(s) * SR)
+            s_sec = self.beats_to_sec(s)
+            i = int(s_sec * SR)
             m = min(len(v), n - i)
+            if idx in choke_secs:
+                choke_samples = max(1, int((choke_secs[idx] - s_sec) * SR))
+                if choke_samples < m:
+                    v = v[:choke_samples].copy()
+                    fl = min(fade_len, len(v))
+                    v[-fl:] *= np.linspace(1.0, 0.0, fl, dtype=np.float32)[:, None]
+                    m = len(v)
             if m > 0:
                 if keep_pan and t.autopan:
                     period, depth = t.autopan
@@ -415,11 +440,13 @@ class Song:
         return a, n
 
     # ------------------------------------------------------------------- midi
-    def export_midi(self, path, tracks=None, channel=None, bends=True, markers=None):
+    def export_midi(self, path, tracks=None, channel=None, bends=True, markers=None,
+                    mpe=False, mpe_bend_range=None):
         """Write a type-1 MIDI file. `channel=None` gives each track its own channel
         (drums on 10); `channel=0` puts everything on channel 1, which is what a
-        one-plugin-per-track Reaper setup like BassMidi expects. Bends, glides and
-        vibrato are written as pitch-wheel data (range +/-2 semitones)."""
+        one-plugin-per-track Reaper setup like BassMidi expects. Set `mpe=True` to emit
+        MPE 1.0 Lower Zone configuration (RPN 00 06) and allocate overlapping notes
+        across Member Channels so polyphonic per-note bends never bleed."""
         import mido
         tpb = 480
         mid = mido.MidiFile(ticks_per_beat=tpb)
@@ -433,6 +460,104 @@ class Song:
             last = tick
         mid.tracks.append(meta)
         tracks = tracks or self.tracks
+
+        if mpe:
+            has_drums = any(instruments.resolve(t.instrument)[1] >= 127 for t in tracks)
+            n_members = 8 if has_drums else 15
+            member_chs = list(range(1, 1 + n_members))
+            pitched_tracks = [t for t in tracks if instruments.resolve(t.instrument)[1] < 127]
+            if mpe_bend_range is not None:
+                zone_range = max(1, min(96, int(round(mpe_bend_range))))
+            else:
+                needed = [int(round(self._effective_bend_range(t))) for t in pitched_tracks]
+                zone_range = max(1, min(96, max(needed + [48])))
+
+            # Emit MPE Configuration Message (RPN 00 06) on Lower Zone Master Channel 0
+            cfg = mido.MidiTrack()
+            cfg.append(mido.MetaMessage("track_name", name="MPE Lower Zone Setup", time=0))
+            cfg.append(mido.Message("control_change", channel=0, control=101, value=0, time=0))
+            cfg.append(mido.Message("control_change", channel=0, control=100, value=6, time=0))
+            cfg.append(mido.Message("control_change", channel=0, control=6, value=n_members, time=0))
+            cfg.append(mido.Message("control_change", channel=0, control=38, value=0, time=0))
+            for mch in member_chs:
+                cfg.append(mido.Message("control_change", channel=mch, control=101, value=0, time=0))
+                cfg.append(mido.Message("control_change", channel=mch, control=100, value=0, time=0))
+                cfg.append(mido.Message("control_change", channel=mch, control=6, value=zone_range, time=0))
+                cfg.append(mido.Message("control_change", channel=mch, control=38, value=0, time=0))
+            mid.tracks.append(cfg)
+
+            member_free_tick = {c: -1 for c in member_chs}
+            member_bent = {c: False for c in member_chs}
+            member_prog = {}
+            for t in tracks:
+                fkey, bank, prog = instruments.resolve(t.instrument)
+                is_drum = bank >= 127
+                label = t.instrument if isinstance(t.instrument, str) else f"{fkey} {bank}:{prog}"
+                tr = mido.MidiTrack()
+                tr.append(mido.MetaMessage("track_name", name=f"{t.name} [{label}]", time=0))
+                if is_drum:
+                    msgs = []
+                    for s, b, k, v, _bend in t.events:
+                        s_tick = int(s * tpb)
+                        e_tick = max(s_tick + 1, int((s + b) * tpb) - 1)
+                        msgs.append((s_tick, 2, 9, dict(type="note_on", note=max(0, min(127, k)), velocity=v)))
+                        msgs.append((e_tick, 0, 9, dict(type="note_off", note=max(0, min(127, k)), velocity=0)))
+                    msgs.sort(key=lambda m: (m[0], m[1]))
+                    last = 0
+                    for tick, _, mch, kw in msgs:
+                        tr.append(mido.Message(channel=mch, time=tick - last, **kw))
+                        last = tick
+                    mid.tracks.append(tr)
+                    continue
+
+                if fkey != "synth" and len(pitched_tracks) == 1:
+                    tr.append(mido.Message("control_change", channel=0, control=0, value=min(bank, 127), time=0))
+                    tr.append(mido.Message("program_change", channel=0, program=prog % 128, time=0))
+                if len(pitched_tracks) == 1:
+                    tr.append(mido.Message("control_change", channel=0, control=10,
+                                           value=int((t.pan + 1) * 63.5), time=0))
+
+                msgs = []  # (tick, order, ch, kwargs)
+                ordered = sorted(t.events, key=lambda ev: (ev[0], ev[2]))
+                prog_key = (fkey, bank, prog)
+                for s, b, k, v, bend in ordered:
+                    s_tick = int(s * tpb)
+                    e_tick = max(s_tick + 1, int((s + b) * tpb) - 1)
+                    same_prog_idle = [
+                        c for c in member_chs
+                        if member_free_tick[c] <= s_tick and member_prog.get(c) == prog_key
+                    ]
+                    idle = same_prog_idle or [c for c in member_chs if member_free_tick[c] <= s_tick]
+                    mch = idle[0] if idle else min(member_chs, key=lambda c: member_free_tick[c])
+                    if fkey != "synth" and member_prog.get(mch) != prog_key:
+                        msgs.append((s_tick, 0, mch, dict(type="control_change", control=0, value=min(bank, 127))))
+                        msgs.append((s_tick, 0, mch, dict(type="program_change", program=prog % 128)))
+                        member_prog[mch] = prog_key
+                    has_bend = bool(bends and (bend or t.vibrato) and b > 0)
+                    if member_bent[mch]:
+                        msgs.append((s_tick, 1, mch, dict(type="pitchwheel", pitch=0)))
+                        member_bent[mch] = False
+                    msgs.append((s_tick, 2, mch, dict(type="note_on", note=max(0, min(127, k)), velocity=v)))
+                    msgs.append((e_tick, 0, mch, dict(type="note_off", note=max(0, min(127, k)), velocity=0)))
+                    if has_bend:
+                        for pw_tick, pw_ord, pw_kw in self._pitchwheel(t, s, b, bend, tpb, bend_range=float(zone_range)):
+                            if pw_tick <= e_tick:
+                                msgs.append((pw_tick, pw_ord, mch, pw_kw))
+                        member_bent[mch] = True
+                    member_free_tick[mch] = max(member_free_tick[mch], e_tick + 1)
+                for p_start, p_end in t.pedals:
+                    if p_end > p_start:
+                        msgs.append((int(round(p_start * tpb)), 1, 0, dict(type="control_change", control=64, value=127)))
+                        msgs.append((int(round(p_end * tpb)), 0, 0, dict(type="control_change", control=64, value=0)))
+                msgs.sort(key=lambda m: (m[0], m[1], m[2]))
+                last = 0
+                for tick, _, mch, kw in msgs:
+                    tr.append(mido.Message(channel=mch, time=tick - last, **kw))
+                    last = tick
+                mid.tracks.append(tr)
+            mid.save(path)
+            return path
+
         free = [c for c in range(16) if c != 9]          # 15 melodic channels
         pitched = [t for t in tracks if instruments.resolve(t.instrument)[1] < 127]
         # one channel per track if they fit; otherwise tracks with the same

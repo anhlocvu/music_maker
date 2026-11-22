@@ -3,17 +3,17 @@
 ## Files
 | file | what it does |
 |---|---|
-| `engine/sf2.py` | SoundFont 2 parser + sampler (memory-mapped, handles huge fonts); `pitch_curve`, `pitch_lfo` |
+| `engine/sf2.py` | SoundFont 2.04 parser + sampler (memory-mapped, `sampleModes` 0/1/3, `exclusiveClass` choke); `pitch_curve`, `pitch_lfo` |
 | `engine/synth.py` | built-in oscillators: `nes_pulse6/12/25/50`, `nes_triangle`, `nes_noise`, `osc_sine`, `osc_triangle` |
 | `engine/instruments.py` | `register_font(key, path)`, `GM` / `KITS` name tables, `INSTRUMENTS` (name -> ("main", bank, program)), `load()` |
-| `engine/song.py` | `Song`, `Track`, step-string parser, pedal/strum/arpeggio, mixer + reverb, WAV/stems/MIDI/loop export |
+| `engine/song.py` | `Song`, `Track`, step-string parser, pedal/strum/arpeggio, `exclusiveClass` choke, mixer + reverb, WAV/stems/MIDI/MPE/loop export |
 | `engine/midi_io.py` | `parse_midi_file`, `discover_midi_sources`, `load_midi_into_track` (notes + CC64 pedals) |
 | `engine/rpp.py` | `load_rpp(path)` reads a Reaper project into a Song |
 | `engine/harmony.py` | `parse(symbol)`, `chord_at(timeline, beat)`, `pitch_class`, `midi_to_name` |
 | `engine/voicing.py` | `voice_lead(...)` DP voice-leading with `LOW_INTERVAL_LIMITS` + `apply_voicings(...)` |
 | `engine/expression.py` | `humanize_track(...)` / `humanize_song(...)`, `expressive_bends(...)`, `make_bend_curve(...)`: timing/velocity humanization + phrasing-aware pitch bends |
 | `engine/patterns.py` | `list_patterns(...)`, `pattern_to_steps(...)` (729 classic drum patterns), `drum_stats_suggest(...)` (Groove MIDI stats) |
-| `engine/review.py` | `review_song(...)` & `format_review(...)`: detects low-interval mud, minor 2nd/9th rubs, parallels, static loops |
+| `engine/review.py` | `review_song(...)`, `symbolic_metrics(...)` & `format_review(...)`: detects mud, rubs, parallels, static loops, plus GTR-CTRL `PCE`/`GC`/`PIP`/`UIP` |
 | `engine/analysis.py` | `analyze_wav(...)` & `analyze_song_mix(...)`: K-weighted LUFS, 6-band balance, spectral slope vs `tonal-references.json`, stem check |
 | `render.py` | `python render.py [song ...]`; exports mix WAV, MIDI, and `out/<song>/multi_track/*.wav` stems |
 | `review_song.py` | `python review_song.py <song>` runs score-level diagnostics before/after rendering |
@@ -105,7 +105,7 @@ Note: `export_midi()` automatically emits **RPN `0,0` (Pitch Bend Sensitivity)**
 ## Output
 - `song.render("out/x.wav")` -> normalized array (and WAV if a path is given).
 - `song.export_stems("out/x/multi_track", keep_pan=False)` -> exports each track as an aligned WAV stem (keeps reverb/vibrato/release/bends/pedal; centers pan at `0.0` so DAW mixing starts clean).
-- `song.export_midi("out/x.mid", markers=[(8, "loopStart"), (248, "loopEnd")])` (includes CC 64 sustain pedal events).
+- `song.export_midi("out/x.mid", markers=[(8, "loopStart"), (248, "loopEnd")])` (includes CC 64 sustain pedal events; pass `mpe=True, mpe_bend_range=24` for MPE 1.0 Lower Zone `RPN 00 06` and per-note member channel bends).
 - `song.render_loop(start_beat, end_beat, "out/x")` -> `_intro`, `_loop`, `_looped` (smpl chunk).
 - Verify with numpy: duration, rms/peak per second, per-track first/last beat,
   loop seam jump `abs(loop[0]-loop[-1])` vs typical sample steps.

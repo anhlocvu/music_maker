@@ -164,12 +164,14 @@ Use between vocal phrases, not over every lyric.
 
 - **Do not write six-note piano chords for distorted guitar.** Distortion wants simpler voicings.
 - **Do not ignore open strings.** They are part of the instrument's sound.
-- **Do not assume every chord inversion is easy.** Guitar voicings are shape-dependent.
+- **Do not assume every chord inversion is easy.** Guitar voicings are shape-dependent and constrained to a ~4-fret hand box (`along`/`across` transition cost).
+- **Do not bend one string inside a single-channel MIDI chord.** Standard MIDI pitch wheel bends every note on that channel; split stationary vs. bent strings onto separate `Track`s or export with MPE (`export_midi(..., mpe=True)`).
 - **Do not put busy guitar fills under every vocal line.** Answer the singer.
 - **Do not forget right-hand rhythm.** Strum/pick pattern can define the style more than the chord names.
 
 ## Cross-references
 
+- Deep guitar/bass articulations (12 bends, palm mute, harmonics, slides), fretboard playability & per-string synthesis → `guitar-bass-expression` skill
 - Metal/punk/hardcore guitar → `../genres/metal-punk-hardcore.md`
 - Country guitar → `../genres/country-americana.md`
 - Brazilian guitar contexts → `../genres/brazilian-pop-and-funk.md`
