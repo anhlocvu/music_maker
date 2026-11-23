@@ -425,3 +425,34 @@ Kích hoạt `llm-prompt-optimizer` (khung RSCIT, Positive Alternatives, Few-Sho
 ### Kiểm thử sau cùng
 - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 10 · agents 5 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`, 0 errors, 0 warnings).
 - Kiểm tra JSON `music_maker_plugin/plugin.json` (`1.6.0`) và Markdown formatting: **OK**.
+
+
+---
+
+## Phiên làm việc: 2026-11-23 — Skill `melody-harmonization` & Tái hòa âm Toàn diện (v1.7.0)
+
+### Mục tiêu
+Tìm kiếm, tải và trích xuất sang văn bản thuần bộ tài liệu thực chiến từ cốt lõi đến nâng cao về tư duy soạn hòa âm cho giai điệu có sẵn và thiết kế tiến trình hợp âm nói chung; áp dụng `llm-prompt-optimizer` + SpecKit (`specs/004-melody-harmonization-skill/`) + ECC để đóng gói 100% trung thực (không bịa đặt, không thêm mã Python phân tích giai điệu) thành skill phổ quát mới `melody-harmonization`, kích hoạt mọi lúc khi soạn/tái hòa âm, sau đó xóa toàn bộ tệp trong `tai lieu/`.
+
+### Những thay đổi đã thực hiện
+
+1. **Nghiên cứu & Trích xuất Nguồn (32 tài liệu -> 100% chuẩn hóa trước khi xóa `tai lieu/`)**:
+   - Đã thu thập, đối chiếu và trích xuất 32 tài liệu mở/học thuật & sư phạm: Trevor de Clercq (2018 Melodic Skeletons & Bass Meta-Schemas, 2019 Harmonic-Bass Divorce, 2023 ~2s Harmonic Rhythm), Temperley & de Clercq (2013 Corpus Stats), AccoMontage2 (ISMIR 2022 3-Level Scoring), AutoHarmonizer (Beat-Strength & `Γ` Harmonic Rhythm), *Open Music Theory v2* (Phrase Model `Tb–PD–D–Te`, Jazz Voicings `3–7` + `9–13`, Embellishing Chords/`CT°7`, Substitutions/`subV7`/`ii–V` Space, Pop/Classical/Modal/Pentatonic Schemas, Tonicization, Closely Related Modulation, Modal Mixture, Spicer Fragile/Emergent/Absent Tonics), và bộ tài liệu Ted Greene (Chord Substitution Parts 1–10, Harmonic Improvement Concepts, Gospel Feels, What to Expect in Popular Music, Major-Key Harmonic Tendencies, Pre-Destination Chord Movements, Scale-Chord Relationships in Popular Music).
+   - Không thêm bất kỳ module Python phân tích giai điệu nào vào `engine/`.
+
+2. **SpecKit `004-melody-harmonization-skill` & Nâng cấp Plugin (`v1.7.0`)**:
+   - Tạo `specs/004-melody-harmonization-skill/{spec.md,plan.md,tasks.md,checklists/requirements.md}` và cập nhật `.specify/feature.json`.
+   - Tạo trọn bộ 8 tệp trong `music_maker_plugin/skills/melody-harmonization/`:
+     - `SKILL.md` (71 dòng): Tối ưu theo chuẩn `llm-prompt-optimizer` (RSCIT, 5-step Chain-of-Thought, Zero-Hallucination Constraints, Dual Priority `Docs ‖ midi_map.md`, Zero-Code User Persona, 2 Few-Shot Examples đã kiểm chứng voice-leading từng nốt, Output Format ở cuối).
+     - `references/00-navigation.md` (21 dòng), `references/melodic-skeleton-and-harmonic-rhythm.md` (80 dòng), `references/phrase-architecture-and-scoring.md` (66 dòng), `references/ted-greene-substitution-and-approach-toolkit.md` (113 dòng), `references/voice-leading-embellishment-and-modulation.md` (74 dòng).
+     - `assets/harmonic-tendencies-and-approaches.yaml` (213 dòng): Bảng tra cứu YAML đầy đủ 3 Chord Families, 38 mục `major_key_harmonic_tendencies`, bảng Pre-Destination (`to_minor`: 27, `to_dom`: 16, `to_maj`: 14 + 5 `combined_turnaround_examples`), và `scale_chord_relationships_pop`.
+     - `assets/melody-harmonization-checklists.md` (38 dòng): 5-Gate Pre-Arrangement Audit + Diagnostic Matrix.
+   - Tích hợp phổ quát (universal activation) vào `music_maker_plugin/rules/AGENTS.md`, `skills/soundfont-music/SKILL.md`, `skills/music-theory-harmony/{SKILL.md,references/00-navigation.md,references/harmony/reharmonization.md}`, `agents/{composer-theorist,executive-producer}.md`, `THIRD_PARTY.md`, `plugin.json` (`1.7.0`), và `README.md` (`v1.7.0`, 11 skills).
+
+3. **Kiểm toán `code-reviewer` & Dọn dẹp**:
+   - Đã xử lý triệt để toàn bộ 5 lỗi HIGH, 6 lỗi MEDIUM và 4 điểm LOW từ `code-reviewer` (sửa `SKILL.md` Example 1 & 2 voice-leading chính xác 4 giọng không bước nhảy vượt bậc 2, sửa liên kết chéo `../../` từ `references/`, bổ sung `m7+`, `v(7)<->iiiø7`, 3 mục `iv6/v6/vi6`, `Any logical bass progression`, nhãn `(More rare)`, 5 ví dụ kết hợp từ bản tóm tắt 1977, cảnh báo `do not think Lydian Melodic`, công thức liên tục `chord_bars ≈ BPM / 120` bù khoảng trống tempo bins, loại bỏ mô tả suy đoán không có trong AccoMontage2 và bass line không có nguồn ở Concept 9).
+   - Xóa sạch 100% nội dung bên trong thư mục `tai lieu/` (`TAI_LIEU_REMAINING: 0`).
+
+### Kiểm thử sau cùng
+- Kiểm tra `yaml.safe_load()` trên `harmonic-tendencies-and-approaches.yaml`, `json.loads()` trên `plugin.json` (`1.7.0`), kiểm tra tất cả liên kết chéo tương đối trong `references/`, quét rò rỉ đường dẫn `tai lieu` (`CLEAN_TAI_LIEU_LEAKS: 0`): **OK**.
+- `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 11 · agents 5 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).

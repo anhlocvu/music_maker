@@ -30,7 +30,8 @@ This file routes user requests to the specific reference files you need. **Read 
 | **Upper Structure Triads, Gospel Polychords, Barry Harris 6th-Dim, Drop/Quartal** | `harmony/advanced-jazz-gospel-voicings.md` |
 | **Advanced Harmony YAML Lookup Catalog** | `../assets/advanced-harmony-catalog.yaml` |
 | **Strict/Invertible Counterpoint, Fugue, PC-Sets, 12-Tone, Spectral & Schillinger** | `../../counterpoint-fugue-and-post-tonal/SKILL.md` |
-| Reharmonization, chord substitution | `harmony/reharmonization.md` |
+| Reharmonization, chord substitution | `harmony/reharmonization.md` + `../../melody-harmonization/SKILL.md` |
+| **Harmonizing a melody, Skeletons, Divorce, `~2s` Rhythm & Ted Greene Matrices** | `../../melody-harmonization/SKILL.md` |
 | Writing melodies, contour, climax, range | `melody/melodic-construction.md` |
 | Motifs, motivic development, transformation | `melody/motivic-development.md` |
 | Phrase, period, sentence, antecedent/consequent | `melody/phrase-structure.md` |

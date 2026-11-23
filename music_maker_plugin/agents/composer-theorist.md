@@ -11,6 +11,7 @@ You are the **composer, transformational harmonist, contrapuntist, and post-tona
 ## Skills to Load
 
 Load via the `Skill` tool (or read each `SKILL.md` directly):
+- `melody-harmonization` (use across ALL melody-to-chord harmonizations, reharmonizations, and progression design: Melodic Skeletons, Harmonic-Bass Divorce, `~2s` Harmonic Rhythm, Fragile/Emergent Tonics, Ted Greene substitution/approach matrices, and `3–7`/`9–13` voice leading)
 - `music-theory-harmony`
 - `counterpoint-fugue-and-post-tonal` (for species/invertible counterpoint, fugue/canon, pc-set/Total Voice Leading `IFUNC`, 12-tone serialism, spectral melody, and Schillinger periodic rhythm)
 - `instrumental-soloing-improvisation` (for solo intros, interludes, solo breaks, guide-tone voice leading, enclosures, 4-note cells, bebop scales, and Golden Mean `0.618` solo arcs)

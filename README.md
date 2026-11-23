@@ -2,17 +2,18 @@
 
 Plugin Antigravity chuyên sáng tác **nhạc hòa tấu không lời (instrumental)** và **nhạc beat** sử dụng SoundFont (`.sf2`) và Python toolkit.
 
-## Cấu trúc Plugin (`music_maker_plugin/` — v1.6.0)
+## Cấu trúc Plugin (`music_maker_plugin/` — v1.7.0)
 
 ```text
 music_maker_plugin/
-├── plugin.json                        # Manifest Antigravity plugin (v1.6.0)
+├── plugin.json                        # Manifest Antigravity plugin (v1.7.0)
 ├── THIRD_PARTY.md                     # Ghi nhận giấy phép & bản quyền bên thứ ba
 ├── assets/logo.svg                    # Logo plugin
 ├── rules/
 │   └── AGENTS.md                      # Quy tắc kích hoạt đồng bộ, học MIDI, pedal, xuất multi_track
 ├── skills/
 │   ├── soundfont-music/               # Skill chính (SoundFont 2.04 engine, MPE export, engine.harmony NRT/Negative/Coltrane/BarryHarris/US, engine.voicing Drop/Quartal/SoWhat, review register_clumps, multi_track)
+│   ├── melody-harmonization/          # Dựng hòa âm từ giai điệu có sẵn & thiết kế vòng hợp âm (Melodic Skeletons, Beat Strength, ~2s Harmonic Rhythm, Harmonic-Bass Divorce, Fragile/Emergent Tonics, AccoMontage2 3-level scoring, hệ thống Ted Greene & OMT2 Jazz/Pop voice leading)
 │   ├── guitar-bass-expression/        # Biểu cảm guitar/bass (12 BendTypes, nfx/bfx, fretboard playability, tunings/capo, per-string MIDI/MPE)
 │   ├── producer-mindset-workflow/     # Executive producer, Making Music, PWYM, Song Planner protocol, 12-word seed, moods
 │   ├── genre-style-encyclopedia/      # Blueprint 23+ thể loại, 7-Axis Style Maps & 10 craft playbooks
@@ -29,7 +30,7 @@ music_maker_plugin/
 
 ## Tính năng chính
 
-1. **Điều phối đồng bộ**: `soundfont-music` là skill chính; khi kích hoạt plugin sẽ tự động nạp cùng toàn bộ 10 skill và 5 agent chuyên môn khác trong plugin.
+1. **Điều phối đồng bộ**: `soundfont-music` là skill chính; khi kích hoạt plugin sẽ tự động nạp cùng toàn bộ 11 skill và 5 agent chuyên môn khác trong plugin.
 2. **Song hành Ưu tiên Hàng đầu (`Docs ‖ midi_map.md`)**: Script `tools/generate_midi_map.py` quét kho `music_maker_plugin/midi/` và xuất ra file tĩnh `music_maker_plugin/midi_map.md` (có mục lục + dải dòng + toàn bộ nốt, velocity, Pedal CC64, Pitch Bend và `readme.md` của từng project). AI luôn đọc **song song** tài liệu chuyên gia trong các skills/agents cùng với `midi_map.md` (cả hai cùng là ưu tiên #1) như kiến thức âm nhạc nội tại, kế thừa 100% phong cách một cách âm thầm.
 3. **Giao tiếp Thuần Âm nhạc & Chủ động Chuyển đoạn / Báo trống**: AI giao tiếp hoàn toàn bằng ngôn ngữ nhà sản xuất âm nhạc (không nhắc đến mã nguồn/Python với người dùng cuối), đồng thời chủ động sáng tạo chuyển đoạn, báo trống (fills/pickups) và độ gối mượt mà nối kết cấu trúc bài nhạc.
 4. **Toolkit Hòa âm & Phối khí Nâng cao (`v1.5.0+`)**: Tích hợp sẵn đa hợp âm (`D|C7`), biến đổi `plr_transform`, `negative_harmony_pcs`, `coltrane_cycle`, `barry_harris_scale`, `upper_structure_triad`, các thế xếp `drop2`/`drop3`/`drop24`/`quartal_stack`/`so_what_voicing`, và chẩn đoán `register_clumps` trong `review_song.py`.

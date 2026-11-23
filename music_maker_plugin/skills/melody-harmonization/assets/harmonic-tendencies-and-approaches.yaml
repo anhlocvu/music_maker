@@ -1,0 +1,213 @@
+# Ted Greene Harmonic Tendencies, Pre-Destination Chord Movements & Scale-Chord Relationships
+# Normalized cleanly from Ted Greene's pedagogical reference sheets (1974-1979):
+#   - Most Common Harmonic Tendencies in Jazz and Related Music (1977-10-27 / 1979-09-14)
+#   - Summary of Most Common Chord Movements in Modern Jazz Harmony (1977-06-16)
+#   - Scale-Chord Relationships in Popular Music (1974-03-23)
+#   - Chord Substitution Parts 1-10 (1973)
+
+chord_families_and_top_note_rules:
+  note: >
+    Chords in the same family are Siblings. 7ths can be reduced to triads or expanded to upper
+    extensions (and 6ths likewise). Always check how the top (melody) note sits against extensions.
+  major_family:
+    members: ["maj", "maj6", "maj7", "add9", "maj9", "maj6/9", "maj13", "maj6/9#11", "maj9#11", "maj/#11", "maj7+", "maj9+"]
+    non_dominant_guard: "Fits any major triad NOT functioning as a dominant or dominant of a dominant (V/V, etc.)."
+    fitting_major_degrees: ["I", "IV (in major keys)", "bII", "bIII", "bVI", "bVII", "bV (rarer)"]
+    special_major_degrees:
+      slash9_or_2: ["II", "V", "VI"]
+      sus: "all degrees"
+      "6_or_6_9": "rarely on other degrees"
+      caution: "Altered-5th or #11 major chords are less freely substituted than standard major extensions. Try maj7+, maj9+ for 7+ for an unusual quality."
+  minor_family:
+    group_1_standard:
+      members: ["m", "m7", "m7/11", "m9", "m11", "m/9"]
+      role: "Replace any minor triad or minor 7th chord."
+    group_2_half_diminished_and_aug:
+      members: ["m7b5", "m7b5/11", "m7+ (1,b3,#5,b7)"]
+      role: "m7b5 types replace minor 7ths and are most common on ii of minor (vii of major); equivalent to m6 a minor 3rd higher (Am6 = F#m7b5). Try m7+ for 7#9+."
+    group_3_minor6:
+      members: ["m6", "m6/9", "m6/7", "m6/9/7", "m6/11", "m6/9#11"]
+      role: "Used in place of i, iv, bvi (temporary i), or on ii (m6, m6/11); rarer on biii, vi, bvii. Can replace dom7 a 1/2 step lower for altered effect (Am6 for G#7)."
+    group_4_line_cliche:
+      members: ["m(maj7)", "m(maj9)", "descending/ascending line: m -> m(maj7) -> m7 -> m6"]
+      role: "Used in moving-line progressions or when maj7 sits on top as the melody note."
+  dominant_7th_family:
+    group_1_pretty_natural:
+      members: ["7", "7/6", "9", "13"]
+      note: "Top melody note determines ear acceptance or rejection."
+    group_2_suspended:
+      members: ["7sus", "7/6sus", "11", "13sus"]
+      note: "Virtually identical to companion m7 a 5th higher (G13sus <-> Dm9). Generally works wherever Group 1 works."
+    group_3_whole_tone_and_lydian_dominant:
+      whole_tone_type: ["+", "7+", "7b5", "9+"]
+      whole_tone_role: "Often replaces V7 or V/V."
+      melodic_minor_5th_up_type: ["7b5", "9b5", "7#11", "9#11", "13#11"]
+      melodic_minor_degrees:
+        I: "ending chords"
+        bII: "substitute for V7"
+        II: "for II7 (usually major keys)"
+        bIII: "occasionally for VI7 (major keys)"
+        IV: "for IV7"
+        "#IV_or_bV": "for I7"
+        V: "rarely for V7"
+        bVI: "for II7 and bVI7"
+        bVII: "for II7 and bVII7"
+    group_4_altered_resolving:
+      members: ["7b9", "7#9", "7b9+", "7b9b5", "7#9+", "7#9b5", "13b9", "13#9", "13b9b5"]
+      role: "Replaces dominant 7ths functioning as resolving V7."
+    group_5_minor_v_and_11b9:
+      members: ["11b9", "11b9+", "7/11", "7/6/11"]
+      role: "Almost exclusively on V for V7 (rarely I or II)."
+
+major_key_harmonic_tendencies:
+  note: "Next-chord tendencies in Major from Ted Greene (1977/1979). Original sheets write ±7 for m7b5. Parentheses denote softer/less frequent targets."
+  "I": ["I7", "i°7", "bII7 (vamp)", "#i°7 (VI7b9/v°7)", "ii7", "II7", "bIII7", "(biii7)", "biii°7 (i°7)", "III7", "iiim7b5", "(iii7)", "IV", "IV7", "iv7", "(iv6)", "#ivm7b5", "(#iv7)", "bV7", "V7", "v7", "v6 (iiim7b5)", "bVI7", "(bvi7)", "vi7", "vi6 (#ivm7b5)", "VI7", "bVII7", "bVII", "bvii7", "viim7b5", "vii7", "VII7", "(rarer: i7, i6, i+)"]
+  "I7": ["IV", "IV7", "(iv7 or iv6)", "#ivm7b5 (vi6)", "II(7)", "i7", "i°7"]
+  "i7": ["IV7", "vii7", "viim7b5"]
+  "I+": ["I6", "vi", "IV"]
+  "bII": ["I", "I7"]
+  "bIImaj7": ["I", "ii7"]
+  "#i°7": ["ii7", "V7/5"]
+  "ii7": ["V7", "(v7)", "bII7", "bIImaj7", "biii°7", "(i°7)", "VI7", "(vi7)", "iii7", "(III7)", "iv7 (or iv6)", "bVII7", "ii7/7", "(IV/5)", "viim7b5", "(vii7)"]
+  "iim7b5": ["V7", "bII7", "bIImaj7", "I"]
+  "II7": ["V(7)", "bII7", "bIImaj7", "ii7", "iim7b5 (iv6)", "vi7 (vamp)", "VI7"]
+  "biii7": ["ii7", "bVI7"]
+  "biii°7": ["ii7", "I/3", "(V7)", "(iii7)"]
+  "bIII7": ["bVImaj7", "bVI7", "ii7", "II7"]
+  "bIIImaj7": ["bVImaj7", "ii7", "iim7b5"]
+  "iii7": ["vi7", "VI7", "biii7", "bIII7", "biii°7", "(bIIImaj7)", "I7", "(v7)", "i7 or i6 (to key of V)", "ii7", "IVmaj7", "IV7", "iv7 or iv6", "bVI7"]
+  "III7": ["vi7", "VI7", "bIII7", "iii7", "iiim7b5", "(bIIImaj7)", "IV"]
+  "iiim7b5": ["VI7"]
+  "IV": ["iv7 or iv6", "bVII7", "#iv°7 (i°7)", "#ivm7b5", "V7", "viim7b5", "(vii7)", "II7", "iii7 or iiim7b5", "III7", "I"]
+  "IV7": ["III7", "iii7 (iiim7b5)", "I", "I7", "#iv°7", "#ivm7b5", "iv7 or iv6", "bVII7", "viim7b5", "vii7"]
+  "iv6": "(see iim7b5)"
+  "bV7": ["IV", "iv7", "IV7", "iv6"]
+  "iv7": ["bVII7", "iii7 or iiim7b5", "I"]
+  "#iv°7": ["I/5", "I7/5"]
+  "#ivm7b5": ["VII7", "IV7", "iv7", "iv6", "V7", "I"]
+  "#iv7": ["VII7", "IV7", "iv7"]
+  "V7": ["I", "I7", "iii7", "iiim7b5", "III7", "v7", "#iv7", "#ivm7b5", "viim7b5", "vii7", "ii7 or iim7b5 (vamp)", "iv7"]
+  "v7": ["I7"]
+  "v6": "(see iiim7b5)"
+  "bVI7": ["ii7", "iim7b5", "(II7)", "bIImaj7", "bII7", "V7", "I"]
+  "bvi7": ["bII7", "v7", "V7"]
+  "bVImaj7": ["bIImaj7", "bII7", "V7", "ii7", "iim7b5", "bvi7"]
+  "vi(7)": ["ii7", "II7", "iim7b5", "vi7/7 (I/5)", "#ivm7b5 (vi6)", "bVI7", "bvi7", "III7 (vamp)", "(VII7)", "I7/5"]
+  "vi6": "(see #ivm7b5)"
+  "VI7": ["ii7", "iim7b5", "II7", "biii7", "iii7 or iiim7b5 (vamp)", "#ivm7b5", "bVI7", "vi7"]
+  "bVII7": ["I", "iii7", "(iiim7b5)", "VI7", "vi7", "bIII7", "bIIImaj7", "iv7 (vamp)"]
+  "bvii7": ["bIII7"]
+  "viim7b5_and_vii7": ["III7", "iii7", "iiim7b5", "(bVII7, bvii7)"]
+  "VII7": ["iii7", "iiim7b5", "III7", "viim7b5 or vii7", "I", "(iv7)"]
+
+pre_destination_approach_movements:
+  note: >
+    Chords that commonly precede each target chord quality (1977-06-16). Listed roots represent
+    whole Chord Families (e.g., D7 - Dbmaj7 - C may become D9 - Dbmaj9 - Cmaj13).
+    m7b5 may substitute for m7 anywhere; all °7 & ° built on B, D, F, and Ab are really just G7 sounds.
+    Any logical bass progression may also precede Cm7, C7, or C.
+  to_minor_destination_Cm7_or_Cm6:
+    - "G7 -> Cm7"
+    - "Gm7 -> Cm7"
+    - "Dm7 -> G7 -> Cm7"
+    - "D7 -> G7 -> Cm7"
+    - "Ab7 -> G7 -> Cm7"
+    - "Db7 -> Cm7"
+    - "Abm7 -> Db7 -> Cm7"
+    - "Ab7 -> Db7 -> Cm7"
+    - "Dbmaj7 -> Cm7"
+    - "Abmaj7 -> Dbmaj7 -> Cm7"
+    - "Ab7 -> Dbmaj7 -> Cm7"
+    - "C#m7 -> Cm7"
+    - "Dm7 -> C#m7 -> Cm7 (or Ebm7)"
+    - "C7 -> Cm7"
+    - "Gm7 -> C7 -> Cm7"
+    - "Gb7 (F#7) -> Cm7"
+    - "C#m7 -> F#7 -> Cm7"
+    - "C#°7 -> Cm7"
+    - "C#m7b5 -> Cm7"
+    - "Dm7 -> Gm7 -> Cm7"
+    - "D7 -> Gm7 -> Cm7"
+    - "Ab -> Cm7"
+    - "Eb -> Cm7"
+    - "Any logical bass progression -> Cm7"
+    - "D7 -> Db7 -> Cm7 (More rare)"
+    - "D7 -> Dbmaj7 -> Cm7 (More rare)"
+    - "Dmaj7 -> Db7 -> Cm7 (More rare)"
+  to_dominant_destination_C7:
+    - "Gm7 -> C7"
+    - "G7 -> C7"
+    - "Dm7 -> Gm7 -> C7"
+    - "D7 -> Gm7 -> C7"
+    - "Dm7 -> G7 -> C7"
+    - "D7 -> G7 -> C7"
+    - "Ab7 -> G7 -> C7"
+    - "Abm7 -> Gm7 -> C7"
+    - "Db7 -> C7"
+    - "Abm7 -> Db7 -> C7"
+    - "F#7 (Gb7) -> C7"
+    - "C#m7 -> F#7 -> C7"
+    - "Bb -> C7"
+    - "Any logical bass progression -> C7"
+    - "D7 -> Db7 -> C7 (More rare)"
+    - "Dmaj7 -> Db7 -> C7 (More rare)"
+  to_major_destination_C:
+    - "G7 -> C"
+    - "Dm7 -> G7 -> C"
+    - "D7 -> G7 -> C"
+    - "Ab7 -> G7 -> C"
+    - "Db7 -> C"
+    - "Abm7 -> Db7 -> C"
+    - "Ab7 -> Db7 -> C"
+    - "Dbmaj7 -> C"
+    - "Abmaj7 -> Dbmaj7 -> C"
+    - "Ab7 -> Dbmaj7 -> C"
+    - "Any logical bass progression -> C"
+    - "D7 -> Db7 -> C (More rare)"
+    - "D7 -> Dbmaj7 -> C (More rare)"
+    - "Dmaj7 -> Db7 -> C (More rare)"
+  combined_turnaround_examples:
+    - "A7 -> Dm7 -> G7 -> C"
+    - "Am7 -> Dm7 -> G7 -> C"
+    - "Em7 -> A7 -> Dm7 -> G7 -> C"
+    - "Ebm7 -> Ab7 -> Dm7 -> G7 -> C"
+    - "Am7 -> D7 -> Dm7 -> G7 -> C"
+
+scale_chord_relationships_pop:
+  major_keys:
+    diatonic_chords: "Use appropriate modes."
+    "II7_and_V7_family":
+      "II7": "Mixolydian (all extensions of II7 use this mode too)"
+      "II7_II7+_II9+": "Mixolydian of Melodic Minor"
+      "II7_II7+_II7b9_II7b9+_(II11b9(+))": "Mixolydian of Harmonic Minor"
+      "II7+_II7b5_II7b9+_II7#9+_II7b9b5_II7#9b5": "Locrian Melodic scale"
+      "II7_II7b9_II13b9_II7b9b5_II13b9b5_II7#9_II7#9b5_II13#9": "Half-Whole scale"
+      "II+_II7b5_II7+_II9+_II9b5": "Whole-Tone scale"
+      "II7_II9_II13_II7/6_II7b5_II7#11_II9b5_II#11_II13#11": "Melodic Minor up a 5th (do not think Lydian Melodic)"
+      "II7#9(b5)": "Blues scale"
+      note: "V7 uses all scales above according to taste and necessity."
+    other_secondary_chords:
+      "VI7": "Most common 1st choice: Mixolydian Harmonic Minor with added #9th; 2nd: Locrian Melodic; 3rd: Mixolydian"
+      "III7_VII7": "Like VI7"
+      "I7": "Treat in same manner as V7 (functioning as V7 of IV)"
+      "IV7": "Mixolydian; Melodic Minor up a 5th"
+      "bVII7": "Melodic Minor up a 5th; Mixolydian"
+      "bII7": "Melodic Minor up a 5th"
+      "bIII7": "Mixolydian; Melodic Minor up a 5th"
+      "bV7": "Treat as bII7 of IV"
+      "bVI7": "Melodic Minor up a 5th; Mixolydian"
+    qualities:
+      major_extended: "Major or Lydian"
+      "major+": "Relative Melodic and Harmonic Minor"
+      "non_diatonic_m7": "Dorian almost always (except modulation to vi -> Aeolian, or iii -> Phrygian)"
+      "m7b5": "Locrian, Dorian of Harmonic Minor, or Aeolian of Melodic Minor"
+      "m6": "Melodic Minor or Dorian (depending on melody)"
+      "m(maj7)": "Melodic or Harmonic Minor"
+      "dim7": "Convert to 7b9 chords with the appropriate scale then being played"
+  minor_keys:
+    diatonic_chords: "All 5 main scales (Natural, Harmonic, Melodic, Dorian, Phrygian) – use appropriate modes."
+    "II7": "Mixolydian of Harmonic Minor, Locrian Melodic, Half-Whole, Mixolydian"
+    "bVII7": "Treat as V7 of bIII"
+    "IV7": "As in major keys; also when functioning as V7 of bVII, apply V7 scales"
+    "bII7_bV7_bVI7": "Same as major keys"
+    "bIII7": "Treat as V7 of bVI"

@@ -276,3 +276,4 @@ A song in C major might intro on a related key (the relative minor, a chromatic 
 - Voicings that change feel without changing chords → `chord-construction.md`, `assets/jazz-voicings.md`
 - Form-level reharm (where to apply, when) → `form/popular-song-forms.md`, `form/classical-forms.md`
 - Reharm in genre context → `genres/jazz-styles.md`, `genres/film-tv-scoring.md`, `genres/kpop-jpop.md`
+- Melody-to-harmony workflow, Melodic Skeletons, Divorce, `~2s` Harmonic Rhythm & Ted Greene matrices → `../../../melody-harmonization/SKILL.md`

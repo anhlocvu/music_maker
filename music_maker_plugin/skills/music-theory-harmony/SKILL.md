@@ -38,6 +38,7 @@ Before outputting notes or progressions, resolve these 5 steps:
 | Intervals, scales, keys, meter, notation | `references/fundamentals/pitch-intervals-scales.md`, `rhythm-meter.md`, `notation-and-conventions.md` |
 | Chords, T-S-D function, cadences, voice leading | `references/harmony/chord-construction.md`, `functional-harmony.md`, `voice-leading.md` |
 | Chromaticism, modulation, modal & jazz harmony, reharm | `references/harmony/chromatic-harmony.md`, `modulation.md`, `modal-harmony.md`, `jazz-harmony.md`, `reharmonization.md` |
+| **Melody harmonization, Skeletons, Divorce, `~2s` Rhythm & Ted Greene Toolkits** | `../melody-harmonization/SKILL.md` |
 | **Neo-Riemannian, Tonnetz, Axis & Film Cadences** | `references/harmony/neo-riemannian-and-tonnetz.md` |
 | **Negative Harmony (CRT) & Lydian Chromatic Concept** | `references/harmony/negative-harmony-and-polarity.md` |
 | **Upper Structures, Gospel Polychords, Barry Harris & Drop Voicings** | `references/harmony/advanced-jazz-gospel-voicings.md` |

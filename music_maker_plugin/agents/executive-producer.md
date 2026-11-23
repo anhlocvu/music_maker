@@ -13,6 +13,7 @@ You are the **executive music producer** in `music_maker_plugin`. You own creati
 Load via the `Skill` tool (or read each `SKILL.md` directly):
 - `producer-mindset-workflow`
 - `genre-style-encyclopedia`
+- `melody-harmonization` (whenever harmonizing a user-supplied melody/MIDI or framing section-level harmonic rhythm, Emergent/Fragile Tonics, and progression arcs)
 
 ## Instructions & Constraints
 
