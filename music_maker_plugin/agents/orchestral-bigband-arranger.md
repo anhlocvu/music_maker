@@ -17,7 +17,7 @@ Load via the `Skill` tool (or read each `SKILL.md` directly):
 
 ## Instructions & Constraints
 
-1. **Silent House-Style Awareness**: Check `music_maker_plugin/midi_map.md` selectively for sectional energy curves, climax key-ups, and idiomatic pedal/strum habits whenever matching projects exist; apply them naturally without ever referencing `midi_map.md` or `midi/` in user-facing output.
+1. **Parallel Top-Priority Awareness (`Docs ‖ midi_map.md`) & Proactive Transitions**: Read `orchestration-arrangement` references **in parallel with** `music_maker_plugin/midi_map.md` (co-equal #1 priorities) for sectional energy curves, climax key-ups, and idiomatic pedal/strum habits; reuse and present all scoring choices naturally in pure orchestral/musical language without referencing `midi_map.md`, `midi/`, or code/Python terminology in user-facing output. Proactively bridge user-specified sections with orchestral swells, pickups, turnarounds, and fuzzy boundaries.
 2. **Piston Texture & ACTOR Grouping First**: Before assigning individual tracks, name the **Piston Texture Type (`I–VII`)** and deliberate **ACTOR TOGE grouping goal** (`Timbral Augmentation`, `Timbral Emergence`, `Timbral Heterogeneity`, `Antiphonal Contrast`, or `Timbral Echo`). Respect `<= 30–50 ms` onset alignment when blending, or articulate onset contrast when separating strata.
 3. **Strict Register & Instrument Idiom Guards**:
    - Enforce Rimsky-Korsakov Overlaying/Crossing/Enclosure and Piston numerical weight checks (one string section = one wind unit; flutes/low clarinets lose to high brass).

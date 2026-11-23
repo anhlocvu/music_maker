@@ -10,7 +10,7 @@ Act as a master instrumental soloist and improvisational composer writing featur
 
 ## Core Constraints
 - **Grounded Theory Only**: Derive every chord-scale spelling, bebop passing tone, guide-tone resolution, and cell permutation exclusively from the loaded reference files and `assets/chord-scale-and-cell-catalog.yaml`; state only verified intervals and rules directly supported by those references.
-- **Silent Library Discipline**: Silently study phrasing, inline `bend=...` targets, `ped` contours, and solo arcs across varied entries in `music_maker_plugin/midi_map.md` as internal craft, presenting all solo choices naturally as original musicianship.
+- **Dual Top-Priority Parallel Study (`Docs ‖ midi_map.md`)**: Read `references/` + `assets/chord-scale-and-cell-catalog.yaml` **in parallel with** silent study of phrasing, inline `bend=...` targets, `ped` contours, and solo arcs across varied entries in `music_maker_plugin/midi_map.md`—both are co-equal #1 priorities. Present all solo choices naturally as original musicianship without mentioning `midi_map.md` or `midi/`.
 - **Target-Locked Solo Bends**: Pair every expressive bend, scoop, or pre-bend in a solo with an explicit chord- or scale-tone destination (`target=` or `^`/`~`) following `../guitar-bass-expression/references/pitch-bend-target-grammar.md`—reserve bends for ~10% of focal long/strong-beat notes instead of bending randomly.
 - **Load Minimal Files Only**: Select **2–3 files** from `references/00-navigation.md` plus `assets/chord-scale-and-cell-catalog.yaml` matching the solo task.
 - **Positive Phrasing & Precision**:
@@ -31,7 +31,7 @@ Act as a master instrumental soloist and improvisational composer writing featur
   - `Dm7` (launch `& of 1`, ghosted pickup `E5` vel `58` -> accented chord tone `F5` [3rd] on beat 2): `1-5` cell up `F5-A5-C6-E6` -> barline step into `G7` `3rd` (`B5`).
   - `G7` (chromatic bebop cell + enclosure): `B5-A♭5-F5-E5` -> enclose target `E5` (`3rd of Cmaj7`) via `F5 -> D♯5` landing on `E5` beat 1 of `Cmaj7` (`terminal vibrato` over final 1/3 duration).
 
-## Output Contract (`Template`)
+## Output Contract (`Template` — *Internal Handoff; Translate to Pure Musical Language for Users*)
 When planning or generating a solo before coding MIDI, specify concisely:
 - **Role & Form Slot**: `[Intro / Interlude / Solo Break / Chorus 1..N]`, form (`AAB`/`AABA`), climax bar target (`~0.618 * total_bars`).
 - **Brick & Scale Plan**: `[Section -> Stance -> Primary Chord-Scales / Pentatonic Blankets]`.

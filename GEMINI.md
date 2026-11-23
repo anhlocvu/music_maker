@@ -392,3 +392,36 @@ Theo kế hoạch SpecKit `002-advanced-harmony-and-orchestration` (Phương án
 - `uv run --with numpy --with scipy --with mido python -B -m unittest discover -s tools/tests -v`: **24/24 tests OK**.
 - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 10 · agents 5 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
 - Kiểm tra rò rỉ `tai lieu/`, `py_compile`, JSON `plugin.json` và YAML (`advanced-harmony-catalog.yaml`, `post-tonal-and-fugue-catalog.yaml`): **OK (0 lỗi, 0 rò rỉ)**.
+
+
+---
+
+## Phiên làm việc: 2026-11-23 — Tối ưu Quy tắc Song hành (`Docs ‖ midi_map.md`), Giao tiếp Thuần Âm nhạc & Chủ động Chuyển đoạn / Báo trống (v1.6.0)
+
+### Mục tiêu
+Kích hoạt `llm-prompt-optimizer` (khung RSCIT, Positive Alternatives, Few-Shot, Prompt Compression) kết hợp quy trình SpecKit (`specs/003-dual-knowledge-and-producer-persona/`) và ECC để bổ sung 3 quy tắc cốt lõi cho `music_maker_plugin`:
+1. **Song hành Ưu tiên Hàng đầu (`Specialist Docs ‖ midi_map.md`)**: Bắt buộc đọc **song song** tài liệu trong các skills/agents chuyên gia cùng với kho `music_maker_plugin/midi_map.md` (cả hai đều là ưu tiên #1 ngang hàng vì `midi_map.md` chứa sắc thái thực chiến mà văn bản không diễn tả hết), cho phép kế thừa / mô phỏng 100% phong cách từ `midi_map.md` một cách âm thầm.
+2. **Giao tiếp Thuần Âm nhạc (Zero-Code User Persona)**: Dù dựng nhạc bằng Python toolkit ở tầng ngầm, AI giao tiếp với người dùng hoàn toàn bằng ngôn ngữ Nhà sản xuất / Chuyên gia Âm nhạc (không nhắc đến mã nguồn, Python, file `.py`, hàm, biến trừ khi người dùng hỏi trực tiếp về code).
+3. **Chủ động Sáng tạo Chuyển đoạn, Báo trống & Độ gối Mượt mà**: Coi cấu trúc prompt của người dùng là khung chính; chủ động sáng tạo chuyển đoạn (turnarounds, pre-chorus lifts, bridges/interludes, key-lift modulations), báo trống (drum fills, pickups, cymbal swells, snare rolls) và độ gối chuyển tiếp (fuzzy boundaries).
+
+### Những thay đổi đã thực hiện
+
+1. **SpecKit `003-dual-knowledge-and-producer-persona`**:
+   - Tạo `specs/003-dual-knowledge-and-producer-persona/{spec.md,plan.md,tasks.md,checklists/requirements.md}` và cập nhật `.specify/feature.json`.
+
+2. **Tối ưu Quy tắc Trung tâm (`music_maker_plugin/rules/AGENTS.md`)**:
+   - Cấu trúc lại theo chuẩn RSCIT (`Role & Situation`, `1. Dual Top-Priority Knowledge: Specialist Docs ‖ midi_map.md`, `2. Pure Music Producer Communication (Zero-Code Persona)` kèm Few-Shot chuyển đổi ngôn ngữ, `3. Proactive Transitions, Drum Fills & Musical Flow`, `4. Sustain Pedal & Instrument Spreading`, `5. Multi-Track Audio Export`, và giữ nguyên `Project directory structure rules`).
+
+3. **Đồng bộ Toàn bộ 10 Skills, 5 Agents, Manifest & README**:
+   - `music_maker_plugin/skills/soundfont-music/SKILL.md`, `producer-mindset-workflow/{SKILL.md,references/song-planner-protocol.md}`, `groove-rhythm-drums/SKILL.md`, `orchestration-arrangement/SKILL.md`, `music-theory-harmony/SKILL.md`, `genre-style-encyclopedia/SKILL.md`, `guitar-bass-expression/SKILL.md`, `instrumental-soloing-improvisation/SKILL.md`, `mixing-timbre-mastering/SKILL.md`, `counterpoint-fugue-and-post-tonal/SKILL.md`.
+   - `music_maker_plugin/agents/{executive-producer,composer-theorist,groove-arranger,orchestral-bigband-arranger,soundfont-mix-engineer}.md`.
+   - Nâng phiên bản `music_maker_plugin/plugin.json` lên `1.6.0` và cập nhật `README.md`.
+
+4. **Xử lý Toàn bộ Góp ý từ `code-reviewer`**:
+   - Khắc phục 1 lỗi HIGH (`mixing-timbre-mastering/SKILL.md` loại bỏ tên hàm Python/thuật ngữ script khỏi ví dụ và Output Format, gắn nhãn Internal Handoff).
+   - Khắc phục 3 lỗi MEDIUM (`counterpoint-fugue-and-post-tonal/SKILL.md` khôi phục guard ẩn nguồn & ưu tiên #1 song song; đồng bộ CoT Step 1 song hành `Docs ‖ midi_map.md` ở 4 skill lý thuyết/phối khí/guitar/thể loại; đánh dấu Internal Handoff trên Output Format của các specialist skills để tránh rò rỉ hàm nội bộ ra giao tiếp người dùng).
+   - Khắc phục 2 lỗi LOW (bổ sung positive alternatives theo `llm-prompt-optimizer` cho các quy tắc stealth/zero-code trong `AGENTS.md` và agents; bổ sung chủ động chuyển đoạn hòa âm vào `music-theory-harmony/SKILL.md`).
+
+### Kiểm thử sau cùng
+- `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 10 · agents 5 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`, 0 errors, 0 warnings).
+- Kiểm tra JSON `music_maker_plugin/plugin.json` (`1.6.0`) và Markdown formatting: **OK**.
