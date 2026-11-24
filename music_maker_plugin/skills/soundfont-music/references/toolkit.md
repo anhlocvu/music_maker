@@ -14,10 +14,11 @@
 | `engine/expression.py` | `humanize_track(...)` / `humanize_song(...)`, `expressive_bends(...)`, `make_bend_curve(...)`: timing/velocity humanization + phrasing-aware pitch bends |
 | `engine/patterns.py` | `list_patterns(...)`, `pattern_to_steps(...)` (729 classic drum patterns), `drum_stats_suggest(...)` (Groove MIDI stats) |
 | `engine/review.py` | `review_song(...)`, `symbolic_metrics(...)` & `format_review(...)`: detects `low_intervals`, `register_clumps`, `vertical_rubs`, `outside_chord`, `out_of_scale_bends`, `parallels`, `static_loops`, plus GTR-CTRL `PCE`/`GC`/`PIP`/`UIP` |
-| `engine/analysis.py` | `analyze_wav(...)` & `analyze_song_mix(...)`: K-weighted LUFS, 6-band balance, spectral slope vs `tonal-references.json`, stem check |
+| `engine/analysis.py` | `analyze_wav(...)`, `analyze_song_mix(...)`, `slice_wav(...)`, `build_auto_profile_windows(...)`, `slice_wav_segments(...)`: K-weighted LUFS, 6-band balance, spectral slope vs `tonal-references.json`, stem check, and variable-duration WAV slicing |
 | `render.py` | `python render.py [song ...]`; exports mix WAV, MIDI, and `out/<song>/multi_track/*.wav` stems |
 | `review_song.py` | `python review_song.py <song>` runs score-level diagnostics before/after rendering |
 | `analyze_audio.py` | `python analyze_audio.py out/<song>.wav --stems out/<song>/multi_track --ref pop` runs quantitative NumPy QA |
+| `slice_audio.py` | `python slice_audio.py out/<song>.wav --auto-profile` or `--windows "0:10,85:25,210:8"` extracts multi-duration WAV segments for direct listening QA |
 | `analyze_midi.py` | Optional CLI analyzer (`python analyze_midi.py [dir]`) used by `tools/generate_midi_map.py` to build `music_maker_plugin/midi_map.md` or inspect a single standalone `.mid`/folder |
 | `list_presets.py` | `python list_presets.py <font key> [search]` prints ready-to-paste tuples |
 

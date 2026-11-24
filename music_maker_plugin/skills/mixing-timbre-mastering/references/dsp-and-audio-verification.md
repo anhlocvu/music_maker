@@ -2,8 +2,8 @@
 
 *Grounded in `audio-artifacts-debug`, `audio-dsp`, and `soundfont-music` NumPy/WAV verification practices.*
 
-## 1. Mandatory Integrity Rule
-You cannot physically listen to rendered audio files. Never claim a mix "sounds warm," "hits hard," or "has no mud" by ear—instead, **verify structure, levels, dynamic range, phase, and artifact absence quantitatively via Python/NumPy** after every render, and report exactly what was measured.
+## 1. Mandatory Integrity Rule (Dual Verification: DSP + Direct Listening)
+Never claim ear impressions ("sounds warm," "hits hard," "clean chorus") unless you have **directly listened** to the rendered WAV (and tailored `slice_audio.py` Meso/Micro segments) via `Read` (`audio-listening-critic`), and always pair listening with **quantitative Python/NumPy DSP checks** (`analyze_audio.py`) after every render. Report only measured values and directly heard acoustic evidence.
 
 ---
 

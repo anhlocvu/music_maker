@@ -1,0 +1,1 @@
+This track falls into the Eurodance genre (from the 1990s era, blended with Techno and hints of Happy Hardcore / Happy Hardbeat).

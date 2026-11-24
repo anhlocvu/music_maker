@@ -456,3 +456,34 @@ Tìm kiếm, tải và trích xuất sang văn bản thuần bộ tài liệu th
 ### Kiểm thử sau cùng
 - Kiểm tra `yaml.safe_load()` trên `harmonic-tendencies-and-approaches.yaml`, `json.loads()` trên `plugin.json` (`1.7.0`), kiểm tra tất cả liên kết chéo tương đối trong `references/`, quét rò rỉ đường dẫn `tai lieu` (`CLEAN_TAI_LIEU_LEAKS: 0`): **OK**.
 - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 11 · agents 5 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`).
+
+
+---
+
+## Phiên làm việc: 2026-11-25 — Agent Nghe & Thẩm định Nhạc Thực chiến (`audio-listening-critic`) & Bộ cắt đoạn đa thời lượng `slice_audio.py` (v1.8.0)
+
+### Mục tiêu
+Thử nghiệm trực tiếp công cụ đọc file âm thanh (`audio/wav`) trên `kpop_ballad_c_65bpm.wav` và áp dụng `llm-prompt-optimizer` + quy trình SpecKit (`specs/005-audio-listening-critic/`) + ECC để xây dựng một specialist agent chuyên nghiệp (**`audio-listening-critic`**) có khả năng nghe thực tế bản mix tổng và `multi_track/` stems qua nhiều cấp thời lượng (Macro, Meso `15–30s`, Micro `3–10s`), thay thế giới hạn cũ chỉ dựa vào số liệu Python.
+
+### Những thay đổi đã thực hiện
+
+1. **SpecKit `005-audio-listening-critic`**:
+   - Tạo `specs/005-audio-listening-critic/{spec.md,plan.md,research.md,data-model.md,quickstart.md,tasks.md,checklists/requirements.md}` và cập nhật `.specify/feature.json`.
+
+2. **Bộ cắt đoạn WAV đa thời lượng không phụ thuộc ngoài (`music_maker_plugin/skills/soundfont-music/scripts/toolkit/`)**:
+   - `engine/analysis.py`: Bổ sung `_inspect_wav_header()`, `_require_finite()`, `slice_wav()` (giữ nguyên sample rate/channels/bit-depth PCM, kẹp biên an toàn, chặn giá trị không hữu hạn), `build_auto_profile_windows()` (tự động chia profile đa thời lượng Micro/Meso theo độ dài bài, BPM và optional `loop_seam_s`), và `slice_wav_segments()`.
+   - `slice_audio.py`: CLI hỗ trợ `--start`/`--duration`/`--end`/`--out`, `--windows "label:start:dur,..."`, `--auto-profile --bpm <BPM> --loop-seam <sec>`, kiểm tra xung đột cờ chặt chẽ và xuất JSON chuẩn.
+   - `tools/tests/test_toolkit_audio_slice.py`: Bộ 6 unit tests TDD bao phủ 16-bit stereo, 24-bit mono, biên/lỗi `NaN`/`inf`, auto-profile nhiều thời lượng, và toàn bộ các chế độ/lỗi CLI.
+
+3. **Agent chuyên trách mới `music_maker_plugin/agents/audio-listening-critic.md` (`llm-prompt-optimizer`)**:
+   - Thiết kế chuẩn **RSCIT**, **Chain-of-Thought 6 bước**, **2 Few-Shot Examples** (`REVISE` Ballad & `PASS` Seamless Loop) khớp 100% với **Output Template** đặt cuối prompt, **Anti-Hallucination Guardrail** (chỉ báo cáo những gì nghe được trực tiếp qua `Read` hoặc đo từ `analyze_audio.py`, nếu mơ hồ bắt buộc cắt lát ngắn hơn để kiểm tra lại), **Chiến lược nghe đa thời lượng** (Macro toàn bài → Meso `15–30s` cho Chorus/chuyển đoạn → Micro `3–10s` cho fill trống/bend/pedal/loop seam → soi chéo `multi_track/` stems), **Bảng điểm 5 trục + 4 mức nghiêm trọng (`CRITICAL`/`HIGH`/`MEDIUM`/`LOW`)**, và tách bạch `Internal Handoff` với `Producer Summary` thuần ngôn ngữ âm nhạc (Zero-Code).
+
+4. **Đồng bộ Hệ sinh thái Plugin (`v1.8.0`) & Xử lý toàn bộ góp ý từ `code-reviewer`**:
+   - Thay thế quy tắc lỗi thời *"không thể nghe audio"* thành chuẩn **Dual-Verification Audio QA (DSP NumPy ‖ Direct Multi-Duration Listening)** tại `rules/AGENTS.md` (mục 6), `agents/{README.md,soundfont-mix-engineer.md,executive-producer.md}`, `skills/soundfont-music/{SKILL.md,references/toolkit.md}`, `skills/mixing-timbre-mastering/{SKILL.md,references/dsp-and-audio-verification.md}`, `skills/producer-mindset-workflow/SKILL.md`, `skills/groove-rhythm-drums/SKILL.md`, `plugin.json` (`1.8.0`), và `README.md`.
+   - Khắc phục 1 lỗi HIGH (đồng bộ schema & ví dụ loop seam trong Few-Shot của `audio-listening-critic.md`), 4 lỗi MEDIUM (xung đột cờ & error handling ở `slice_audio.py`, kiểm tra `math.isfinite`/`windows=[]`/thứ tự thời gian ở `engine/analysis.py`, đồng bộ 2 skill còn sót quy tắc cũ, bổ sung test coverage), và 1 điểm LOW (chuẩn hóa đường dẫn `out/<song>/_audit_clips` & chạy standalone `analyze_audio.py`).
+
+### Kiểm thử sau cùng
+- `py_compile` (`engine/analysis.py`, `slice_audio.py`): **OK**.
+- `uv run --with numpy --with scipy --with mido python -B -m unittest discover -s tools/tests -v`: **30/30 tests OK** (3.159s).
+- `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 11 · agents 6 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`, 0 errors, 0 warnings).
+- Smoke test thực tế trên `kpop_ballad_c_65bpm.wav` (`analyze_audio.py --ref pop` + `slice_audio.py --auto-profile --bpm 65` + nghe trực tiếp qua `Read` các đoạn Micro `7.38s` và Meso `29.54s` + dọn sạch `tmp_audit_clips/`): **OK**.

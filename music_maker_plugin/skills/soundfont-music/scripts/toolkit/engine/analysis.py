@@ -169,3 +169,197 @@ def analyze_song_mix(mix_wav, stems_dir=None, lead_stem=None, reference_genre=No
         other_sum = sum(a[:n] for a in other_arrs)
         result["lead_minus_accompaniment_db"] = round(_k_weighted_lufs(lead_sum, sr) - _k_weighted_lufs(other_sum, sr), 2)
     return result
+
+
+def _inspect_wav_header(wav_path):
+    with wave.open(str(wav_path), "rb") as wf:
+        sr = wf.getframerate()
+        ch = wf.getnchannels()
+        sw = wf.getsampwidth()
+        nframes = wf.getnframes()
+    total_duration_s = (nframes / float(sr)) if sr > 0 else 0.0
+    return sr, ch, sw, nframes, total_duration_s
+
+
+def _require_finite(name, value):
+    val = float(value)
+    if not math.isfinite(val):
+        raise ValueError(f"{name} must be a finite number, got {value!r}")
+    return val
+
+
+def slice_wav(wav_path, out_path, start_s=0.0, duration_s=None, end_s=None):
+    """Extract a PCM WAV segment [start_s, end_s] cleanly, preserving format."""
+    src = Path(wav_path)
+    dst = Path(out_path)
+    if not src.is_file():
+        raise FileNotFoundError(f"WAV file not found: {src}")
+
+    sr, ch, sw, nframes, total_duration_s = _inspect_wav_header(src)
+    if nframes <= 0 or sr <= 0:
+        raise ValueError(f"WAV file has no audio frames: {src}")
+
+    start_val = _require_finite("start_s", start_s)
+    if start_val < 0.0 or start_val >= total_duration_s:
+        raise ValueError(
+            f"start_s ({start_val:.3f}s) must be in [0, {total_duration_s:.3f}s) for {src.name}"
+        )
+
+    if duration_s is not None and end_s is not None:
+        raise ValueError("Specify either duration_s or end_s, not both")
+
+    if duration_s is not None:
+        dur_val = _require_finite("duration_s", duration_s)
+        if dur_val <= 0.0:
+            raise ValueError(f"duration_s ({dur_val}) must be > 0")
+        raw_end = start_val + dur_val
+    elif end_s is not None:
+        raw_end = _require_finite("end_s", end_s)
+        if raw_end <= start_val:
+            raise ValueError(f"end_s ({raw_end}) must be greater than start_s ({start_val})")
+    else:
+        raw_end = total_duration_s
+
+    clamped = raw_end > total_duration_s
+    actual_end = min(raw_end, total_duration_s)
+    start_frame = int(round(start_val * sr))
+    end_frame = min(nframes, int(round(actual_end * sr)))
+    if end_frame <= start_frame:
+        raise ValueError("Requested slice resolves to 0 audio frames")
+
+    with wave.open(str(src), "rb") as rf:
+        rf.setpos(start_frame)
+        frames_bytes = rf.readframes(end_frame - start_frame)
+
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    with wave.open(str(dst), "wb") as wf:
+        wf.setnchannels(ch)
+        wf.setsampwidth(sw)
+        wf.setframerate(sr)
+        wf.writeframes(frames_bytes)
+
+    actual_start_s = start_frame / float(sr)
+    actual_end_s = end_frame / float(sr)
+    return {
+        "path": str(dst),
+        "source": str(src),
+        "start_s": round(actual_start_s, 3),
+        "end_s": round(actual_end_s, 3),
+        "duration_s": round(actual_end_s - actual_start_s, 3),
+        "total_duration_s": round(total_duration_s, 3),
+        "sample_rate": int(sr),
+        "channels": int(ch),
+        "clamped": bool(clamped),
+    }
+
+
+def build_auto_profile_windows(total_duration_s, bpm=None, loop_seam_s=None):
+    """Generate variable-duration (micro + meso) audit windows tailored to track length."""
+    total = _require_finite("total_duration_s", total_duration_s)
+    if total <= 0.0:
+        raise ValueError("total_duration_s must be > 0")
+
+    if bpm is not None:
+        bpm_val = _require_finite("bpm", bpm)
+        if bpm_val <= 0.0:
+            raise ValueError(f"bpm ({bpm_val}) must be > 0")
+        bar_s = 240.0 / bpm_val
+    else:
+        bar_s = None
+
+    if loop_seam_s is not None:
+        seam_val = _require_finite("loop_seam_s", loop_seam_s)
+    else:
+        seam_val = None
+
+    if total <= 0.2:
+        return [{"label": "full_micro", "scale": "micro", "start_s": 0.0, "duration_s": total}]
+
+    def _fit(label, start, dur, scale):
+        s = max(0.0, min(start, max(0.0, total - 0.1)))
+        s_r = math.floor(s * 1000.0) / 1000.0
+        d = min(dur, total - s_r)
+        d_r = math.floor(d * 1000.0) / 1000.0
+        if d_r <= 0.0:
+            d_r = max(0.0, total - s_r)
+        return {"label": label, "scale": scale, "start_s": s_r, "duration_s": d_r}
+
+    if total <= 25.0:
+        micro_d = min(6.0, max(2.0, total * 0.3))
+        meso_d = min(12.0, max(4.0, total * 0.55))
+        candidates = [
+            _fit("opening_micro", 0.0, micro_d, "micro"),
+            _fit("body_meso", max(0.0, total * 0.25), meso_d, "meso"),
+            _fit("ending_micro", max(0.0, total - micro_d), micro_d, "micro"),
+        ]
+    else:
+        micro_d = min(10.0, max(6.0, round(bar_s * 2.0, 2) if bar_s else 8.0))
+        detail_d = min(12.0, max(6.0, round(bar_s * 3.0, 2) if bar_s else 10.0))
+        meso_verse_d = min(24.0, max(14.0, round(bar_s * 6.0, 2) if bar_s else 20.0))
+        meso_chorus_d = min(30.0, max(16.0, round(bar_s * 8.0, 2) if bar_s else 28.0))
+        candidates = [
+            _fit("intro_micro", 0.0, micro_d, "micro"),
+            _fit("verse_meso", total * 0.22, meso_verse_d, "meso"),
+            _fit("transition_micro", total * 0.44, micro_d, "micro"),
+            _fit("climax_meso", total * 0.58, meso_chorus_d, "meso"),
+            _fit("detail_micro", total * 0.78, min(detail_d, total * 0.22), "micro"),
+            _fit("outro_micro", max(total * 0.85, total - detail_d), detail_d, "micro"),
+        ]
+
+    if seam_val is not None and 0.0 < seam_val < total:
+        candidates.append(_fit("loop_seam_micro", max(0.0, seam_val - 3.0), 6.0, "micro"))
+
+    candidates.sort(key=lambda item: (item["start_s"], item["duration_s"]))
+    deduped = []
+    seen = set()
+    for w in candidates:
+        if w["duration_s"] <= 0.05:
+            continue
+        key = (round(w["start_s"], 1), round(w["duration_s"], 1))
+        if key not in seen:
+            seen.add(key)
+            deduped.append(w)
+    return deduped
+
+
+def slice_wav_segments(wav_path, out_dir, windows=None, auto_profile=False, bpm=None, loop_seam_s=None):
+    """Extract multiple variable-duration audit clips from a WAV file into out_dir."""
+    src = Path(wav_path)
+    sr, ch, _, nframes, total_duration_s = _inspect_wav_header(src)
+    if nframes <= 0 or sr <= 0:
+        raise ValueError(f"WAV file has no audio frames: {src}")
+
+    if auto_profile and windows is not None:
+        raise ValueError("Specify either explicit windows or auto_profile=True, not both")
+
+    if auto_profile or windows is None:
+        plan = build_auto_profile_windows(total_duration_s, bpm=bpm, loop_seam_s=loop_seam_s)
+    else:
+        plan = list(windows)
+        if not plan:
+            raise ValueError("windows must not be empty")
+
+    out_root = Path(out_dir)
+    out_root.mkdir(parents=True, exist_ok=True)
+    stem = src.stem
+    segments = []
+    for idx, w in enumerate(plan, start=1):
+        label = str(w.get("label") or f"seg_{idx:02d}")
+        safe_label = "".join(c if (c.isalnum() or c in ("-", "_")) else "_" for c in label)
+        start_s = float(w["start_s"])
+        dur_s = w.get("duration_s")
+        end_s = w.get("end_s")
+        clip_path = out_root / f"{stem}_{idx:02d}_{safe_label}.wav"
+        meta = slice_wav(src, clip_path, start_s=start_s, duration_s=dur_s, end_s=end_s)
+        meta["label"] = label
+        if "scale" in w:
+            meta["scale"] = w["scale"]
+        segments.append(meta)
+
+    return {
+        "source": str(src),
+        "total_duration_s": round(total_duration_s, 3),
+        "sample_rate": int(sr),
+        "channels": int(ch),
+        "segments": segments,
+    }

@@ -74,6 +74,14 @@ Reading **specialist skill/agent documentation** AND reading **`music_maker_plug
 
 ---
 
+## 6. Dual-Verification Audio QA (DSP Metrics ‖ Direct Multi-Duration Listening)
+
+- Never ship an arrangement based solely on numeric metrics. After rendering the stereo mix and `multi_track/` stems, invoke **`audio-listening-critic`** alongside quantitative NumPy inspection:
+  - Listen directly to the rendered `.wav` mix via `Read` (Macro full-track pass) **and** slice tailored segments of varying durations (`slice_audio.py` — e.g., `15–30s` Meso section/transition windows and `3–10s` Micro detail windows for fills, pitch bends, sustain-pedal clarity, and loop seams), cross-checking `multi_track/` stems whenever masking or synthetic timbre appears.
+  - Clean up any temporary audit-clip directory immediately after listening QA, and revise the mix or arrangement if any `CRITICAL` or `HIGH` ear issue is found.
+
+---
+
 # Project directory structure rules
 
 It includes a main directory: /
