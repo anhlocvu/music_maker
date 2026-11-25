@@ -12,7 +12,7 @@ Contents: [Brief](#brief) · [Form](#form) · [Harmony](#harmony) · [Melody for
 
 **Numbers here.** A number given with no source beside it is one of two things: a fact of the skill's own banks and tools, measured here or read from their files, or a setting that is this skill's starting value, to be judged by ear and with `analyze`. The sources named give the sound and the practice; a starting value is no norm of the style.
 
-A J-pop or J-rock band cue in TV size is in [anime-opening.md](anime-opening.md). Electronic dance pop production (sidechain, drops) is in [electronic.md](electronic.md), its synth sounds in [electronic-sounds.md](electronic-sounds.md).
+A J-pop or J-rock band cue in TV size is in [anime-opening.md](anime-opening.md). Electronic dance pop production (sidechain, drops) is in [electronic.md](electronic.md), its synth sounds in [electronic-sounds.md](electronic-sounds.md). For deep Pop Ballad rhythm-section craft (delayed legato/descending slash-chord bass, `C3–C6` piano voicings & CC64 pedal, piano-guitar non-collision, studio string sizing/half-open voicings/`CC11`/descants, 4-limb ballad drums, and ballad tutti hits, kicks & setups), activate the dedicated **`pop-ballad-arranging`** skill alongside this playbook.
 
 This guide covers two things: a lead instrument that phrases like a voice, and a song form that builds to its chorus. Each piece of guidance names its source; the layouts and tables are example plans built from them, not norms.
 

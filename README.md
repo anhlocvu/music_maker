@@ -2,11 +2,11 @@
 
 Plugin Antigravity chuyên sáng tác **nhạc hòa tấu không lời (instrumental)** và **nhạc beat** sử dụng SoundFont (`.sf2`) và Python toolkit.
 
-## Cấu trúc Plugin (`music_maker_plugin/` — v1.8.0)
+## Cấu trúc Plugin (`music_maker_plugin/` — v1.9.0)
 
 ```text
 music_maker_plugin/
-├── plugin.json                        # Manifest Antigravity plugin (v1.8.0)
+├── plugin.json                        # Manifest Antigravity plugin (v1.9.0)
 ├── THIRD_PARTY.md                     # Ghi nhận giấy phép & bản quyền bên thứ ba
 ├── assets/logo.svg                    # Logo plugin
 ├── rules/
@@ -22,6 +22,7 @@ music_maker_plugin/
 │   ├── instrumental-soloing-improvisation/ # Solo nâng cao & ứng tác (guide tones, Harmonic Bricks, enclosures, 4-note cells, bebop, nhịp điệu Parker & Golden Mean 0.618)
 │   ├── groove-rhythm-drums/           # Trống nâng cao (4-limb MIDI realism, Doubling Up, Afro-Cuban, SF2 Bank 128 velRange/choke, 10-kit GM/GS map, 729 mẫu trống & Groove MIDI stats)
 │   ├── orchestration-arrangement/     # Phối khí cổ điển (Piston 7 Textures, Rimsky-Korsakov, Berlioz/Strauss/Forsyth/Widor), ACTOR perceptual timbre grouping, Davies studio scoring, Big Band (4-Way Close, 5 approach, Drop-2/2+4, Cascades, Spread Pads) & 5 lớp chức năng
+│   ├── pop-ballad-arranging/          # Phối khí Pop Ballad nâng cao (đường cong 0.618, tách lớp T1/T2/T3, bass đi bậc thang/approach, piano C3-C6 & CC64 pedal, tách nhịp Piano-Guitar, studio strings 5-3-2-2/half-open/CC11/descant, trống 4-limb & tutti/kicks/setups)
 │   └── mixing-timbre-mastering/       # Timbre oppositions, Sound-Box 3D, spectral slope baselines & NumPy/GTR-CTRL QA
 ├── agents/                            # 6 specialist agents: executive-producer, composer-theorist, orchestral-bigband-arranger, groove-arranger, soundfont-mix-engineer, audio-listening-critic
 ├── midi_map.md                        # Bản đồ MIDI tĩnh (sinh bởi tools/generate_midi_map.py) để AI tra âm thầm
@@ -30,7 +31,7 @@ music_maker_plugin/
 
 ## Tính năng chính
 
-1. **Điều phối đồng bộ**: `soundfont-music` là skill chính; khi kích hoạt plugin sẽ tự động nạp cùng toàn bộ 11 skill và 6 agent chuyên môn khác trong plugin.
+1. **Điều phối đồng bộ**: `soundfont-music` là skill chính; khi kích hoạt plugin sẽ tự động nạp cùng tất cả 12 skill và 6 agent chuyên môn trong plugin.
 2. **Song hành Ưu tiên Hàng đầu (`Docs ‖ midi_map.md`)**: Script `tools/generate_midi_map.py` quét kho `music_maker_plugin/midi/` và xuất ra file tĩnh `music_maker_plugin/midi_map.md` (có mục lục + dải dòng + toàn bộ nốt, velocity, Pedal CC64, Pitch Bend và `readme.md` của từng project). AI luôn đọc **song song** tài liệu chuyên gia trong các skills/agents cùng với `midi_map.md` (cả hai cùng là ưu tiên #1) như kiến thức âm nhạc nội tại, kế thừa 100% phong cách một cách âm thầm.
 3. **Giao tiếp Thuần Âm nhạc & Chủ động Chuyển đoạn / Báo trống**: AI giao tiếp hoàn toàn bằng ngôn ngữ nhà sản xuất âm nhạc (không nhắc đến mã nguồn/Python với người dùng cuối), đồng thời chủ động sáng tạo chuyển đoạn, báo trống (fills/pickups) và độ gối mượt mà nối kết cấu trúc bài nhạc.
 4. **Toolkit Hòa âm & Phối khí Nâng cao (`v1.5.0+`)**: Tích hợp sẵn đa hợp âm (`D|C7`), biến đổi `plr_transform`, `negative_harmony_pcs`, `coltrane_cycle`, `barry_harris_scale`, `upper_structure_triad`, các thế xếp `drop2`/`drop3`/`drop24`/`quartal_stack`/`so_what_voicing`, và chẩn đoán `register_clumps` trong `review_song.py`.

@@ -487,3 +487,33 @@ Thử nghiệm trực tiếp công cụ đọc file âm thanh (`audio/wav`) trê
 - `uv run --with numpy --with scipy --with mido python -B -m unittest discover -s tools/tests -v`: **30/30 tests OK** (3.159s).
 - `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 11 · agents 6 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`, 0 errors, 0 warnings).
 - Smoke test thực tế trên `kpop_ballad_c_65bpm.wav` (`analyze_audio.py --ref pop` + `slice_audio.py --auto-profile --bpm 65` + nghe trực tiếp qua `Read` các đoạn Micro `7.38s` và Meso `29.54s` + dọn sạch `tmp_audit_clips/`): **OK**.
+
+
+
+---
+
+## Phiên làm việc: 2026-11-25 — Kho Tài liệu Pop Ballad Nâng cao (`tai lieu/`) & Skill `pop-ballad-arranging` (v1.9.0)
+
+### Mục tiêu
+Tìm kiếm, tải về và trích xuất sang văn bản thuần (UTF-8) các tài liệu học phối khí Pop Ballad nâng cao (Bass, Piano, Guitar, Strings, Drums, Câu Tutti Ballad) vào `tai lieu/`; sau đó áp dụng `llm-prompt-optimizer`, quy trình SpecKit (`specs/006-pop-ballad-arranging-skill/`) và ECC để xây dựng skill chuyên biệt **`pop-ballad-arranging`** bám sát 100% tài liệu nguồn (không bịa đặt), đồng thời liên kết vào hệ sinh thái `music_maker_plugin` (`v1.9.0`) mà vẫn giữ nguyên kho `tai lieu/` cho người dùng tham khảo.
+
+### Những thay đổi đã thực hiện
+
+1. **Thu thập & Trích xuất Tài liệu Pop Ballad Nâng cao (`tai lieu/`, 28 tệp)**:
+   - Trích xuất PDF sang `.txt` bằng `pymupdf` và làm sạch HTML các bài chuyên sâu (26 tệp nguồn): *HK EDB Pop Ballad* (`edb_pop_ballad.txt`, 33 trang), Frans Absil (*Arranging by Examples* 3rd Ed. Demo 248 trang, *Size of the String Section in Popular Music Recordings*, *Studio Orchestra Seating*, *Range of Musical Instruments*), U.S. Navy (*Musician Vol. 2 — NAVEDTRA 15026C* 284 trang), The Midwest Clinic (Jerry Tolson, Dick Dunscomb, Steve Fidyk), Berklee Online (*Piano Digital Handbook* 90 trang, Randy Felts *Basic Piano Voicing Techniques*, Jack Perricone *Melody in Songwriting* Ch. 1), và 13 bài *Sound On Sound* (Dave Stewart & David William Hearn *Arranging For Strings* Pt. 1–4, Big George *Making Arrangements* Pt. 1–4, Mike Senior *Mix Rescue: Strong Arrangements* & *Writing Bass Guitar Parts For Rock*, Dave Gale *Creating Usable Synth Bass*, John Walden *Processing Acoustic Guitars*, Rory Dow *Programming Realistic Drum Parts*, Sam Inglis *20 Tips On Creating Realistic Sequenced Drum Parts*).
+   - Tạo `tai lieu/00_MUC_LUC_TAI_LIEU.md` và `tai lieu/01_TONG_HOP_KY_THUAT_PHOI_KHI_POP_BALLAD_NANG_CAO.md` cho người dùng đọc nhanh.
+
+2. **SpecKit `006-pop-ballad-arranging-skill`**:
+   - Tạo `specs/006-pop-ballad-arranging-skill/{spec.md,plan.md,tasks.md,checklists/requirements.md}` và cập nhật `.specify/feature.json`.
+
+3. **Skill Mới `music_maker_plugin/skills/pop-ballad-arranging/` (100% Source-Grounded)**:
+   - `SKILL.md`: Thiết kế theo `llm-prompt-optimizer` (RSCIT, Anti-Hallucination & Uncertainty Guardrail, Positive Coordination Rules, 6-step CoT, 2 Few-Shot Transformations với Example 2 khớp schema Output Format, Navigation Map, Output Format đặt cuối prompt), giữ nguyên Dual Priority (`References ‖ midi_map.md`) và Zero-Code User Persona.
+   - `references/00-navigation.md` & 7 tài liệu chuyên sâu: `form-tension-and-ballad-case-studies.md`, `bass-pop-ballad-craft.md`, `piano-pop-ballad-voicings-and-pedal.md`, `guitar-pop-ballad-patterns-and-interplay.md`, `strings-pop-ballad-orchestration.md`, `drums-and-percussion-pop-ballad.md`, `tutti-kicks-setups-and-transitions.md`.
+
+4. **Tích hợp Hệ sinh thái Plugin (`v1.9.0`) & Xử lý Góp ý `code-reviewer`**:
+   - Liên kết chéo vào `skills/genre-style-encyclopedia/references/playbooks/pop-and-ballad.md`, `skills/soundfont-music/SKILL.md`, `skills/orchestration-arrangement/SKILL.md`, `skills/groove-rhythm-drums/SKILL.md`, `rules/AGENTS.md`, `agents/{executive-producer,composer-theorist,groove-arranger,orchestral-bigband-arranger,soundfont-mix-engineer}.md`, `THIRD_PARTY.md`, `plugin.json` (`1.9.0`), và `README.md`.
+   - Khắc phục toàn bộ 2 lỗi HIGH (`Absil §11.2.3 Start and stop` là Intro & Coda, tách riêng khỏi *stop breaks / dramatic pauses*; sửa đường dẫn `references/genres/` trong `00-navigation.md`), 5 lỗi MEDIUM (đồng bộ `SKILL.md` với `references/`, sửa số trang sách `pp. 113–114` cho Bell Chords, làm rõ VSL 6-violin section patch & `T1/T2/T3`, chuẩn hóa nguồn từng con số, bổ sung uncertainty fallback và schema Few-Shot), và 4 điểm LOW (số skill trong `README.md`, dải trang HK EDB AABA, ngữ cảnh pedal point Absil, cập nhật `00_MUC_LUC_TAI_LIEU.md`).
+
+### Kiểm thử sau cùng
+- Kiểm tra JSON `music_maker_plugin/plugin.json` (`1.9.0`), kiểm tra không rò rỉ đường dẫn `tai lieu` trong `music_maker_plugin/`, giữ nguyên 28 tệp trong `tai lieu/`: **OK**.
+- `agy plugin validate --strict music_maker_plugin`: **Validation passed** (`skills 12 · agents 6 · rules 1 · hooks 0 · mcpServers 0 · sidecars 0`, 0 errors, 0 warnings).

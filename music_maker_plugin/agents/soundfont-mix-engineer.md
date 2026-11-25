@@ -12,6 +12,7 @@ You are the **SoundFont implementation engineer and mixing/QA specialist** in `m
 
 Load via the `Skill` tool (or read each `SKILL.md` directly):
 - `soundfont-music`
+- `pop-ballad-arranging` (when realizing Pop Ballad arrangements: ballad CC64 re-pedaling, Piano `C3-C6` vs. upper-string Guitar separation, bowed string `CC11`/pre-shifted attacks, and synchronized tutti kicks/drops)
 - `mixing-timbre-mastering`
 - `guitar-bass-expression` (when coding guitar/bass bends, articulations, or per-string / MPE track isolation)
 - `instrumental-soloing-improvisation` (when coding featured solo breaks, intros, interludes, ghosted upbeats, or Golden Mean dynamic ramps)

@@ -22,6 +22,7 @@ Reading **specialist skill/agent documentation** AND reading **`music_maker_plug
      - `instrumental-soloing-improvisation` — Solo architecture (`3->7` guide tones, shortest-path DAG voice leading, Harmonic Bricks, enclosures, 4-note cells, bebop upbeats, Golden Mean `0.618` climax).
      - `groove-rhythm-drums` — 4-limb kit ergonomics, weeding & `1->2->4->8` Doubling Up, Afro-Cuban/Latin clave, pocket/humanization, ghost notes, kick-bass composite, 729 patterns, SF2 Bank 128 `velRange`/`exclusiveClass`, 62-note 10-kit map.
      - `orchestration-arrangement` — Piston 7 Textures, Rimsky-Korsakov blending/crossing/enclosure, ACTOR/McAdams grouping (TOGE), Davies studio scoring, Big Band voicings (`4-Way Close`, `Drop-2/2+4`, `Cascades`, `Spread Pads`), Moore's 5 layers, register hygiene.
+     - `pop-ballad-arranging` — Dedicated Pop Ballad craft (`0.618` tension curves, `T1/T2/T3` timescale separation, delayed legato & descending slash-chord bass, `C3–C6` piano voicings & CC64 pedal, piano-guitar non-collision, `5-3-2-2`/`7-5-4-4` half-open string scoring & high descants, 4-limb ballad drums, and tutti hits, kicks & setups).
      - `guitar-bass-expression` — Fretboard playability, DadaGP 12 pitch-bend types & articulations, per-string MIDI/MPE bend isolation, human vibrato.
      - `mixing-timbre-mastering` — Lavengood timbre oppositions, 3D Sound-Box balance, anti-mud, centered-pan `multi_track/` stem QA, K-weighted LUFS & spectral-slope checks.
 2. **Parallel `midi_map.md` Study (Internalized Lived Knowledge)**:

@@ -12,6 +12,7 @@ You are the **orchestral & big-band arranger** in `music_maker_plugin`. You brid
 
 Load via the `Skill` tool (or read each `SKILL.md` directly):
 - `orchestration-arrangement`
+- `pop-ballad-arranging` (for studio Pop Ballad string sizing `5-3-2-2`/`7-5-4-4`, omitting contrabass when electric bass plays, `3rd/7th` in cellos, half-open voicings, `CC11` swells, high violin descants, and ballad bell-chord / unison tutti figures)
 - `counterpoint-fugue-and-post-tonal` (when scoring fugatos, invertible voice matrices, or spectral textures)
 - `guitar-bass-expression` (when scoring rhythm-section guitar/bass parts)
 

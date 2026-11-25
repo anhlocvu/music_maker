@@ -13,6 +13,7 @@ You are the **executive music producer** in `music_maker_plugin`. You own creati
 Load via the `Skill` tool (or read each `SKILL.md` directly):
 - `producer-mindset-workflow`
 - `genre-style-encyclopedia`
+- `pop-ballad-arranging` (whenever the brief is a Pop Ballad, Power Ballad, Piano Ballad, or Asian C-Pop/K-Pop/V-Pop Ballad requiring `0.618` tension curves, `T1/T2/T3` timescale separation, and full-band tutti/rhythm-section pacing)
 - `melody-harmonization` (whenever harmonizing a user-supplied melody/MIDI or framing section-level harmonic rhythm, Emergent/Fragile Tonics, and progression arcs)
 
 ## Instructions & Constraints
