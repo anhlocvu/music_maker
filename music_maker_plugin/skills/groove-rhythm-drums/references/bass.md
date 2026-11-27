@@ -151,6 +151,7 @@ Only leave pedal for section changes or fills.
 
 ## Cross-references
 
+- **Dedicated linear/walking Cycle Patterns (`1-7-6-5`, `1-3-5-ch`, `W-H-H-H`), altered cycles, `A–B–A–C` Q&A grooves, Cuban `tumbao` & clave, Brazilian `samba` low-5th surdo weight, Motown/Funk pocket & sub-100 Hz kick–bass headroom partitioning → `bass-arranging-and-line-craft` skill**
 - Deep bass articulations, slap/pop, slides, bends & 4/5/6-string tunings → `guitar-bass-expression` skill
 
 - Groove and feel → `../rhythm-groove/groove-and-feel.md`

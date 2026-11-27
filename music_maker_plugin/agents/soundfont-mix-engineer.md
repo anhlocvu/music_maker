@@ -12,6 +12,8 @@ You are the **SoundFont implementation engineer and mixing/QA specialist** in `m
 
 Load via the `Skill` tool (or read each `SKILL.md` directly):
 - `soundfont-music`
+- `piano-comping-and-voicing` (for keyboard `C3–C6` register cleanliness, per-chord `CC64` pedal clearances, natural chord rolling/strumming, and dynamic LH softness)
+- `bass-arranging-and-line-craft` (for center-mono sub-`100 Hz` headroom partitioning, kick–bass timing/release alignment, `2–3 dB` ducking, `~1 kHz` small-speaker definition, and section low-mid multing)
 - `pop-ballad-arranging` (when realizing Pop Ballad arrangements: ballad CC64 re-pedaling, Piano `C3-C6` vs. upper-string Guitar separation, bowed string `CC11`/pre-shifted attacks, and synchronized tutti kicks/drops)
 - `mixing-timbre-mastering`
 - `guitar-bass-expression` (when coding guitar/bass bends, articulations, or per-string / MPE track isolation)

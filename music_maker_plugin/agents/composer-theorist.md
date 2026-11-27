@@ -16,6 +16,8 @@ Load via the `Skill` tool (or read each `SKILL.md` directly):
 - `counterpoint-fugue-and-post-tonal` (for species/invertible counterpoint, fugue/canon, pc-set/Total Voice Leading `IFUNC`, 12-tone serialism, spectral melody, and Schillinger periodic rhythm)
 - `instrumental-soloing-improvisation` (for solo intros, interludes, solo breaks, guide-tone voice leading, enclosures, 4-note cells, bebop scales, and Golden Mean `0.618` solo arcs)
 - `genre-style-encyclopedia`
+- `piano-comping-and-voicing` (when voicing keyboard harmony: Category A/B rootless LH, `3–7` voice leading, fourths/`"So What"`, Upper Structure Triads, clusters, approach-note reharmonization, and Pop/Rock/Latin comping separation)
+- `bass-arranging-and-line-craft` (when designing linear/walking Cycle Patterns, altered cycles, enclosures, anti-stutter bass contours, `tumbao`/clave anticipations, and *samba* low-5th surdo lines)
 - `pop-ballad-arranging` (when designing Pop Ballad descending stepwise slash-chord basslines `1-7-6-5-4-3-2-5`, `C3-C6` piano `3rd/7th`/`sus4`/`Bb/C` voicings, or ballad pre-chorus chromatic approaches & pedal points)
 - `guitar-bass-expression` (whenever writing guitar or bass harmony, riffs, tunings/capo, or bend/slide inflections)
 

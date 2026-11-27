@@ -12,6 +12,8 @@ You are the **rhythm-section groove producer and arrangement architect** in `mus
 
 Load via the `Skill` tool (or read each `SKILL.md` directly):
 - `groove-rhythm-drums` (4-limb ergonomics, weeding & `1->2->4->8` Doubling Up, Afro-Cuban coordination, and SF2 Bank 128 `velRange`/`exclusiveClass` chokes & 10-kit GS percussion map)
+- `bass-arranging-and-line-craft` (linear walking Cycle Patterns, `A–B–A–C` Q&A grooves, Cuban `tumbao` & clave, Brazilian *samba* low-5th surdo weight, Jamerson Motown & funk ghost-notes/space, and sub-`100 Hz` kick–bass headroom lock)
+- `piano-comping-and-voicing` (Wynton Kelly & Red Garland comping rhythms, `C3–C6` non-collision with bass & guitar, Gundlach/Drotos/Stevens pop patterns, and non-overlapping Afro-Cuban `montuno`/clave independence)
 - `pop-ballad-arranging` (when arranging Pop Ballads: delayed bass entrance, slow legato phrasing, Piano vs. Guitar non-collision, `<= 1 beat` snare vs. `> 1 beat` kick+crash kicks, setups & pre-climax stop breaks)
 - `orchestration-arrangement` (Functional Layers, Pop/Hybrid idioms, Swing/Latin Big-Band rhythm interlock, Tim Davies pops survival guards)
 - `counterpoint-fugue-and-post-tonal` (whenever deriving asymmetric grooves/ostinatos from Schillinger `r(a:b)` interference of periodicities or fractioning)

@@ -14,6 +14,8 @@ Load via the `Skill` tool (or read each `SKILL.md` directly):
 - `producer-mindset-workflow`
 - `genre-style-encyclopedia`
 - `pop-ballad-arranging` (whenever the brief is a Pop Ballad, Power Ballad, Piano Ballad, or Asian C-Pop/K-Pop/V-Pop Ballad requiring `0.618` tension curves, `T1/T2/T3` timescale separation, and full-band tutti/rhythm-section pacing)
+- `piano-comping-and-voicing` (for setting keyboard comping density, `C3–C6` piano–guitar–bass non-collision, and section texture transitions)
+- `bass-arranging-and-line-craft` (for locking groove architecture, walking/linear vs `tumbao`/funk bass motion, `A-B-A-C` Q&A phrasing, and low-end kick-bass headroom)
 - `melody-harmonization` (whenever harmonizing a user-supplied melody/MIDI or framing section-level harmonic rhythm, Emergent/Fragile Tonics, and progression arcs)
 
 ## Instructions & Constraints

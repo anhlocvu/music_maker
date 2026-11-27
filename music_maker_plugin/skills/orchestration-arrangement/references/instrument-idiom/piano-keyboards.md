@@ -129,6 +129,8 @@ Leave space for vocal.
 
 ## Cross-references
 
+- **Dedicated multi-genre piano voicings, LH Category A/B rootless & 2-hand spreads, Wynton Kelly/Red Garland comping rhythms, Pop/Rock accompaniment patterns, Afro-Cuban montuno/clave independence, and `C3–C6` rhythm-section rules → `piano-comping-and-voicing` skill**
+- **Slow Pop Ballad formal arcs, delayed piano sustain & guitar spacing → `pop-ballad-arranging` skill**
 - Chord voicings → `../harmony/voice-leading.md`, `../harmony/jazz-harmony.md`
 - Gospel and CCM → `../genres/gospel-and-ccm.md`
 - Country and Americana → `../genres/country-americana.md`
